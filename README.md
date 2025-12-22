@@ -66,22 +66,28 @@ Al subir un documento `manual.pdf`, se crean automáticamente:
 ### 🧠 INSTALACIÓN ####
 
 # Clonar el repositorio
-git clone https://github.com/tu-usuario/hermes.git
+   ```bash
+git clone https://github.com/marferfer/hermes.git
 cd hermes
 
 # Crear entorno virtual
+   ```bash
 python -m venv venv
 source venv/bin/activate  # Linux/Mac
 # o
+   ```bash
 venv\Scripts\Activate.ps1  # Windows
 
 # Instalar dependencias
+   ```bash
 pip install -r requirements.txt
 
 # Descargar modelo
+   ```bash
 ollama pull llama3
 
 # Ejecutar la aplicación
+   ```bash
 streamlit run app.py
 
 
