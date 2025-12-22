@@ -1,0 +1,71 @@
+# ==============================
+# ENTORNOS VIRTUALES
+# ==============================
+venv/
+hermes-env/
+.env
+*.env
+
+# ==============================
+# DOCUMENTOS Y DATOS SENSIBLES
+# ==============================
+# ¡NUNCA subir documentos corporativos a GitHub!
+docs/
+# Archivos de metadatos (contienen info de departamentos)
+*.meta.json
+# Previews generadas (opcional, pero mejor excluir)
+*.preview.txt
+
+# ==============================
+# DATOS DE ÍNDICES VECTORIALES
+# ==============================
+data/
+# Específico para Qdrant standalone
+qdrant/
+# Índice de LlamaIndex en modo local (si usas storage/)
+storage/
+
+# ==============================
+# ARCHIVOS DEL SISTEMA
+# ==============================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==============================
+# LOGS Y ARCHIVOS TEMPORALES
+# ==============================
+*.log
+*.tmp
+*.swp
+*~
+
+# ==============================
+# EDITORES Y IDES
+# ==============================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# ==============================
+# PYTHON
+# ==============================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+.ipynb_checkpoints/
+
+# ==============================
+# STREAMLIT
+# ==============================
+.streamlit/config.toml.local  # si usas configuración local diferente
+# ¡PERO SÍ incluye .streamlit/config.toml (sin .local)!
+
+# ==============================
+# BINARIOS (si los descargas manualmente)
+# ==============================
+bin/
+# Excepto si decides incluirlos versionados (no recomendado por tamaño)
