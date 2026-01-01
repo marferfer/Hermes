@@ -133,3 +133,57 @@ window.HermesConfig = {
   hasFeatureAccess: hasFeatureAccess,
   save: saveConfigToStorage
 };
+
+
+
+
+
+// js/config.js - Añade esta función para verificar el estado del servidor
+
+const SERVER_URL = 'http://localhost:3000';
+
+// Función para verificar si el servidor está activo
+async function checkServerStatus() {
+    try {
+        const response = await fetch(`${SERVER_URL}/health`, {
+            method: 'GET',
+            timeout: 3000
+        });
+        return response.ok;
+    } catch (error) {
+        return false;
+    }
+}
+
+// Función para actualizar el toggle del servidor
+async function updateServerStatusToggle() {
+    const toggle = document.getElementById('server-toggle');
+    const statusText = document.getElementById('server-status-text');
+    const statusDescription = document.getElementById('server-status-description');
+    
+    if (!toggle) return;
+    
+    const isActive = await checkServerStatus();
+    
+    toggle.checked = isActive;
+    
+    if (isActive) {
+        statusText.textContent = 'Servidor Activo';
+        statusDescription.textContent = `Escuchando en ${SERVER_URL} - Los usuarios pueden subir documentos.`;
+    } else {
+        statusText.textContent = 'Servidor Inactivo';
+        statusDescription.textContent = 'El servidor no está disponible. Ejecuta "node server.js" para permitir la carga de documentos.';
+    }
+}
+
+// Verificar estado cada 10 segundos
+setInterval(updateServerStatusToggle, 10000);
+
+// Verificar al cargar la página
+document.addEventListener('DOMContentLoaded', updateServerStatusToggle);
+
+// El toggle es solo informativo, no permite cambiar el estado manualmente
+document.getElementById('server-toggle')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    alert('Este toggle es solo informativo. Para iniciar el servidor, ejecuta "node server.js" en la terminal.');
+});

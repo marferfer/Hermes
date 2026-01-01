@@ -8,6 +8,7 @@ const crypto = require('crypto');
 
 const app = express();
 app.use(cors());
+const PORT = 3000;
 
 // Configuración de destino
 const storage = multer.diskStorage({
@@ -72,7 +73,22 @@ app.post('/upload', (req, res) => {
 });
 
 
-app.listen(3000, () => {
-  console.log('🚀 Servidor escuchando en http://localhost:3000');
+
+// Health check endpoint para verificar si el servidor está activo
+app.get('/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'ok', 
+        message: 'Servidor activo',
+        timestamp: new Date().toISOString()
+    });
+});
+
+// Tus otros endpoints aquí...
+// app.post('/upload', ...);
+// etc.
+
+app.listen(PORT, () => {
+    console.log(`✅ Servidor escuchando en http://localhost:${PORT}`);
+    console.log(`📡 Health check disponible en http://localhost:${PORT}/health`);
 });
 
