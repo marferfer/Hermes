@@ -51,3 +51,72 @@ async function loadSidebar() {
 function logout() {
   alert("Logout deshabilitado en modo desarrollo");
 }
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////// CONFIGURACIÓN DE LA APLICACIÓN ///////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////
+
+// Cargar configuración y manejar eventos de administración
+document.addEventListener('DOMContentLoaded', () => {
+    // Cargar configuración actual
+    const config = HermesConfig.get();
+    
+    // Actualizar checkboxes
+    document.getElementById('chat-toggle').checked = config.chatEnabled;
+    document.getElementById('upload-toggle').checked = config.documentUploadEnabled;
+    document.getElementById('moderation-toggle').checked = config.moderationEnabled;
+    
+    // Manejar cambios en toggles
+    document.getElementById('chat-toggle').addEventListener('change', (e) => {
+        updateConfig({ chatEnabled: e.target.checked });
+        applyFeatureRestrictions();
+    });
+    
+    document.getElementById('upload-toggle').addEventListener('change', (e) => {
+        updateConfig({ documentUploadEnabled: e.target.checked });
+        applyFeatureRestrictions();
+    });
+    
+    document.getElementById('moderation-toggle').addEventListener('change', (e) => {
+        updateConfig({ moderationEnabled: e.target.checked });
+    });
+    
+    // Botón de guardar
+    document.querySelector('button.flex.items-center.gap-2.bg-primary').addEventListener('click', () => {
+        // Aquí irían las validaciones y llamada a API real
+        alert('✅ Configuración guardada');
+    });
+    
+    // Aplicar restricciones inmediatamente
+    applyFeatureRestrictions();
+});
+
+function updateConfig(updates) {
+    const currentConfig = HermesConfig.get();
+    const newConfig = { ...currentConfig, ...updates };
+    HermesConfig.save(newConfig);
+}
+
+// Aplicar restricciones en toda la aplicación
+function applyFeatureRestrictions() {
+    const config = HermesConfig.get();
+    
+    // Restringir chat si está deshabilitado
+    if (!config.chatEnabled) {
+        // Ocultar completamente el chat si no estamos en la página de administración
+        if (!window.location.pathname.includes('administration')) {
+            // Esto se manejará mejor en la página de chat específica
+            console.log('Chat deshabilitado para usuarios');
+        }
+    }
+    
+    // Restringir subida de documentos
+    if (!config.documentUploadEnabled) {
+        const uploadButtons = document.querySelectorAll('.upload-btn');
+        uploadButtons.forEach(btn => {
+            btn.style.display = 'none';
+            btn.setAttribute('disabled', 'true');
+        });
+    }
+}

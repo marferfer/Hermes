@@ -1,20 +1,28 @@
 <!DOCTYPE html>
 
-<html class="light" lang="es"><head>
-<meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Hermes - Gestionar Usuarios</title>
-<!-- Google Fonts -->
-<link href="https://fonts.googleapis.com" rel="preconnect"/>
-<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
-<!-- Material Symbols -->
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
-<!-- Tailwind CSS -->
-<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<!-- Tailwind Config -->
-<script id="tailwind-config">
+<html class="light" lang="es">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Hermes - Gestionar Usuarios</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Material Symbols -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <!-- Tailwind Config -->
+    <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
             theme: {
@@ -30,311 +38,412 @@
                     fontFamily: {
                         "display": ["Inter", "Noto Sans", "sans-serif"]
                     },
-                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
                 },
             },
         }
     </script>
-<style>
+    <style>
         /* Custom scrollbar for webkit */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
+
         ::-webkit-scrollbar-track {
-            background: transparent; 
+            background: transparent;
         }
+
         ::-webkit-scrollbar-thumb {
-            background: #cbd5e1; 
+            background: #cbd5e1;
             border-radius: 4px;
         }
+
         ::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8; 
+            background: #94a3b8;
         }
+
         .dark ::-webkit-scrollbar-thumb {
-            background: #475569; 
+            background: #475569;
         }
+
         .dark ::-webkit-scrollbar-thumb:hover {
-            background: #64748b; 
+            background: #64748b;
         }
     </style>
 </head>
-<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display overflow-hidden h-screen flex antialiased">
-     <!-- Sidebar -->
-<div id="sidebar"></div>
+
+<body
+    class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 font-display overflow-hidden h-screen flex antialiased">
+    <!-- Sidebar -->
+    <div id="sidebar"></div>
     <!-- Main Content Area -->
-<main class="flex-1 flex flex-col h-full overflow-hidden relative">
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
 
 
-<!-- Scrollable Page Content -->
-<div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark p-8">
-<div class="max-w-7xl mx-auto flex flex-col gap-6">
+        <!-- Scrollable Page Content -->
+        <div class="flex-1 overflow-y-auto bg-background-light dark:bg-background-dark p-8">
+            <div class="max-w-7xl mx-auto flex flex-col gap-6">
 
-<!-- Page Heading & Actions -->
-<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-<div>
-<h2 class="text-3xl font-bold text-[#121417] dark:text-white tracking-tight">Gestionar Usuarios</h2>
-<p class="text-slate-500 dark:text-slate-400 mt-1">Administra el acceso y los roles de los empleados en la plataforma.</p>
-</div>
-<button class="flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-lg shadow-lg shadow-primary/30 transition-all active:scale-95 font-semibold text-sm">
-<span class="material-symbols-outlined" style="font-size: 20px;">add</span>
+                <!-- Page Heading & Actions -->
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-3xl font-bold text-[#121417] dark:text-white tracking-tight">Gestionar Usuarios
+                        </h2>
+                        <p class="text-slate-500 dark:text-slate-400 mt-1">Administra el acceso y los roles de los
+                            empleados en la plataforma.</p>
+                    </div>
+                    <button
+                        class="flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white px-5 py-2.5 rounded-lg shadow-lg shadow-primary/30 transition-all active:scale-95 font-semibold text-sm">
+                        <span class="material-symbols-outlined" style="font-size: 20px;">add</span>
                         Nuevo Usuario
                     </button>
-</div>
-<!-- Filters & Controls Card -->
-<div class="bg-surface-light dark:bg-surface-dark rounded-xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex flex-col md:flex-row gap-4 items-end md:items-center justify-between">
-<!-- Search Input -->
-<div class="relative w-full md:w-96">
-<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-<span class="material-symbols-outlined" style="font-size: 20px;">search</span>
-</div>
-<input class="block w-full pl-10 pr-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg leading-5 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition-all" placeholder="Buscar por nombre, correo o ID..." type="text"/>
-</div>
-<!-- Filters Group -->
-<div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
-<!-- Department Filter -->
-<div class="relative min-w-[160px] flex-1 md:flex-none">
-<select class="appearance-none w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 py-2.5 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer text-sm font-medium">
-<option>Todos los Depts.</option>
-<option>Tecnología (IT)</option>
-<option>Recursos Humanos</option>
-<option>Marketing</option>
-<option>Ventas</option>
-</select>
-<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
-<span class="material-symbols-outlined" style="font-size: 20px;">expand_more</span>
-</div>
-</div>
-<!-- Status Filter -->
-<div class="relative min-w-[140px] flex-1 md:flex-none">
-<select class="appearance-none w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 py-2.5 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer text-sm font-medium">
-<option>Estado: Todos</option>
-<option>Activos</option>
-<option>Inactivos</option>
-</select>
-<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
-<span class="material-symbols-outlined" style="font-size: 20px;">expand_more</span>
-</div>
-</div>
-<!-- Export Button -->
-<button class="flex items-center justify-center p-2.5 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-primary transition-colors" title="Exportar CSV">
-<span class="material-symbols-outlined" style="font-size: 20px;">download</span>
-</button>
-</div>
-</div>
-<!-- Users Table -->
-<div class="bg-surface-light dark:bg-surface-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
-<div class="overflow-x-auto">
-<table class="w-full text-left border-collapse">
-<thead>
-<tr class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
-<th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Usuario</th>
-<th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Departamento</th>
-<th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Rol</th>
-<th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Último Acceso</th>
-<th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Estado</th>
-<th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Acciones</th>
-</tr>
-</thead>
-<tbody class="divide-y divide-slate-100 dark:divide-slate-800">
-<!-- Row 1 -->
-<tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-<td class="p-4">
-<div class="flex items-center gap-3">
-<div class="size-10 rounded-full bg-cover bg-center" data-alt="Portrait of Ana Garcia" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDIvl5pWKipQmSodT8jS4Uywrduy21tSGyUrV9-8W-1YYDYqwSsNZq0O_oI9284fjTh-iC4kl306e0_5Uts3se1EaKD44cEQnsuT_MRQ2TxzHx9DubaXtbIhx4kn4UeKkpwCiGRfTcDEEykei0WnXd7kFT5ZTnV_405Oh4SbApDit7fVP2QFLj5f1nFIQp4SYb7WCqNxbc_DwZLH-YKiloez3dA8TQQQY-85LXr8XpXbEjXfTXY6agxem1GfvUG0z7xyhz78TBVrTPm");'></div>
-<div>
-<p class="font-semibold text-slate-900 dark:text-white text-sm">Ana García</p>
-<p class="text-xs text-slate-500 dark:text-slate-400">ana.garcia@hermes.corp</p>
-</div>
-</div>
-</td>
-<td class="p-4">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                </div>
+                <!-- Filters & Controls Card -->
+                <div
+                    class="bg-surface-light dark:bg-surface-dark rounded-xl border border-slate-200 dark:border-slate-800 p-4 shadow-sm flex flex-col md:flex-row gap-4 items-end md:items-center justify-between">
+                    <!-- Search Input -->
+                    <div class="relative w-full md:w-96">
+                        <div
+                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                            <span class="material-symbols-outlined" style="font-size: 20px;">search</span>
+                        </div>
+                        <input
+                            class="block w-full pl-10 pr-3 py-2.5 border border-slate-200 dark:border-slate-700 rounded-lg leading-5 bg-slate-50 dark:bg-slate-800/50 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:ring-2 focus:ring-primary focus:border-primary sm:text-sm transition-all"
+                            placeholder="Buscar por nombre, correo o ID..." type="text" />
+                    </div>
+                    <!-- Filters Group -->
+                    <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+                        <!-- Department Filter -->
+                        <div class="relative min-w-[160px] flex-1 md:flex-none">
+                            <select
+                                class="appearance-none w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 py-2.5 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer text-sm font-medium">
+                                <option>Todos los Depts.</option>
+                                <option>Tecnología (IT)</option>
+                                <option>Recursos Humanos</option>
+                                <option>Marketing</option>
+                                <option>Ventas</option>
+                            </select>
+                            <div
+                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                                <span class="material-symbols-outlined" style="font-size: 20px;">expand_more</span>
+                            </div>
+                        </div>
+                        <!-- Status Filter -->
+                        <div class="relative min-w-[140px] flex-1 md:flex-none">
+                            <select
+                                class="appearance-none w-full bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 py-2.5 px-4 pr-8 rounded-lg leading-tight focus:outline-none focus:bg-white dark:focus:bg-slate-800 focus:border-primary focus:ring-1 focus:ring-primary cursor-pointer text-sm font-medium">
+                                <option>Estado: Todos</option>
+                                <option>Activos</option>
+                                <option>Inactivos</option>
+                            </select>
+                            <div
+                                class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-500">
+                                <span class="material-symbols-outlined" style="font-size: 20px;">expand_more</span>
+                            </div>
+                        </div>
+                        <!-- Export Button -->
+                        <button
+                            class="flex items-center justify-center p-2.5 border border-slate-200 dark:border-slate-700 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-400 hover:text-primary transition-colors"
+                            title="Exportar CSV">
+                            <span class="material-symbols-outlined" style="font-size: 20px;">download</span>
+                        </button>
+                    </div>
+                </div>
+                <!-- Users Table -->
+                <div
+                    class="bg-surface-light dark:bg-surface-dark rounded-xl border border-slate-200 dark:border-slate-800 shadow-sm overflow-hidden flex flex-col">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr
+                                    class="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700">
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Usuario
+                                    </th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                                        Departamento</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Rol</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Último
+                                        Acceso</th>
+                                    <th class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Estado
+                                    </th>
+                                    <th
+                                        class="p-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">
+                                        Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                                <!-- Row 1 -->
+                                <tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                                    <td class="p-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="size-10 rounded-full bg-cover bg-center"
+                                                data-alt="Portrait of Ana Garcia"
+                                                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDIvl5pWKipQmSodT8jS4Uywrduy21tSGyUrV9-8W-1YYDYqwSsNZq0O_oI9284fjTh-iC4kl306e0_5Uts3se1EaKD44cEQnsuT_MRQ2TxzHx9DubaXtbIhx4kn4UeKkpwCiGRfTcDEEykei0WnXd7kFT5ZTnV_405Oh4SbApDit7fVP2QFLj5f1nFIQp4SYb7WCqNxbc_DwZLH-YKiloez3dA8TQQQY-85LXr8XpXbEjXfTXY6agxem1GfvUG0z7xyhz78TBVrTPm");'>
+                                            </div>
+                                            <div>
+                                                <p class="font-semibold text-slate-900 dark:text-white text-sm">Ana
+                                                    García</p>
+                                                <p class="text-xs text-slate-500 dark:text-slate-400">
+                                                    ana.garcia@hermes.corp</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-4">
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
                                             Marketing
                                         </span>
-</td>
-<td class="p-4 text-sm text-slate-600 dark:text-slate-300">
+                                    </td>
+                                    <td class="p-4 text-sm text-slate-600 dark:text-slate-300">
                                         Editor
                                     </td>
-<td class="p-4 text-sm text-slate-500 dark:text-slate-400 tabular-nums">
+                                    <td class="p-4 text-sm text-slate-500 dark:text-slate-400 tabular-nums">
                                         Hace 2 horas
                                     </td>
-<td class="p-4">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">
-<span class="size-1.5 rounded-full bg-emerald-500"></span>
+                                    <td class="p-4">
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">
+                                            <span class="size-1.5 rounded-full bg-emerald-500"></span>
                                             Activo
                                         </span>
-</td>
-<td class="p-4 text-right">
-<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors" title="Editar">
-<span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
-</button>
-<button class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors" title="Eliminar">
-<span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 2 -->
-<tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-<td class="p-4">
-<div class="flex items-center gap-3">
-<div class="size-10 rounded-full bg-cover bg-center" data-alt="Portrait of Carlos Ruiz" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB_wSoovQFowLqWVrYK8XePeTGDHfQDFcO8iTNO-bKeEe5Ca_aSuGMRfjXrTUlMsMXdPsVzCUrSIwOqnpR44qS5lwEs5yxIvYwXgT_nk6jK8ijhTJaSRglwIqLPxdWsWlw-FD9KgxvULt8Mg5FTzjC2wVDCuDd1j_46S75qxYgUgCOWZRXmUelg-eXQIss314bLDHoivim03s0AaVwxW8H0eqaTJu3SG8mK5cfLxgOTMv_5t7AsougYdpGx8vCO3QWWikH4MLNpQNio");'></div>
-<div>
-<p class="font-semibold text-slate-900 dark:text-white text-sm">Carlos Ruiz</p>
-<p class="text-xs text-slate-500 dark:text-slate-400">carlos.ruiz@hermes.corp</p>
-</div>
-</div>
-</td>
-<td class="p-4">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
+                                    </td>
+                                    <td class="p-4 text-right">
+                                        <div
+                                            class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button
+                                                class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
+                                                title="Editar">
+                                                <span class="material-symbols-outlined"
+                                                    style="font-size: 20px;">edit</span>
+                                            </button>
+                                            <button
+                                                class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+                                                title="Eliminar">
+                                                <span class="material-symbols-outlined"
+                                                    style="font-size: 20px;">delete</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- Row 2 -->
+                                <tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                                    <td class="p-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="size-10 rounded-full bg-cover bg-center"
+                                                data-alt="Portrait of Carlos Ruiz"
+                                                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB_wSoovQFowLqWVrYK8XePeTGDHfQDFcO8iTNO-bKeEe5Ca_aSuGMRfjXrTUlMsMXdPsVzCUrSIwOqnpR44qS5lwEs5yxIvYwXgT_nk6jK8ijhTJaSRglwIqLPxdWsWlw-FD9KgxvULt8Mg5FTzjC2wVDCuDd1j_46S75qxYgUgCOWZRXmUelg-eXQIss314bLDHoivim03s0AaVwxW8H0eqaTJu3SG8mK5cfLxgOTMv_5t7AsougYdpGx8vCO3QWWikH4MLNpQNio");'>
+                                            </div>
+                                            <div>
+                                                <p class="font-semibold text-slate-900 dark:text-white text-sm">Carlos
+                                                    Ruiz</p>
+                                                <p class="text-xs text-slate-500 dark:text-slate-400">
+                                                    carlos.ruiz@hermes.corp</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-4">
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">
                                             Tecnología (IT)
                                         </span>
-</td>
-<td class="p-4 text-sm text-slate-600 dark:text-slate-300">
+                                    </td>
+                                    <td class="p-4 text-sm text-slate-600 dark:text-slate-300">
                                         Administrador
                                     </td>
-<td class="p-4 text-sm text-slate-500 dark:text-slate-400 tabular-nums">
+                                    <td class="p-4 text-sm text-slate-500 dark:text-slate-400 tabular-nums">
                                         Hace 5 min
                                     </td>
-<td class="p-4">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">
-<span class="size-1.5 rounded-full bg-emerald-500"></span>
+                                    <td class="p-4">
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">
+                                            <span class="size-1.5 rounded-full bg-emerald-500"></span>
                                             Activo
                                         </span>
-</td>
-<td class="p-4 text-right">
-<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors" title="Editar">
-<span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
-</button>
-<button class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors" title="Eliminar">
-<span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 3 -->
-<tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-<td class="p-4">
-<div class="flex items-center gap-3">
-<div class="size-10 rounded-full bg-cover bg-center" data-alt="Portrait of Miguel Torres" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAZmQczkiTD6uVJv20KGsmdhJLjPX7RN7uxfBDz9WWsQFhWVqkhmuApS9T3Xt5j7xW1TqY9kvkTR415e9gDh7EWdrnU83OI-Ffu6JTZAqUFrlaau_c1stXuAqb-SilgOvs95IeXocPlxbUgSCGNyc-zQ8fs2topR6IFCpKk1ycTD7QzO4tZpKBAq47lGbEHFZVsE2QEeieiAewjnC8MBoGCFgNwe8sJ6wITCKQpKamWdN1ZJmFxPnyekOJVDQDX2yoVlBRe12o2YOhD");'></div>
-<div>
-<p class="font-semibold text-slate-900 dark:text-white text-sm">Miguel Torres</p>
-<p class="text-xs text-slate-500 dark:text-slate-400">m.torres@hermes.corp</p>
-</div>
-</div>
-</td>
-<td class="p-4">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
+                                    </td>
+                                    <td class="p-4 text-right">
+                                        <div
+                                            class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button
+                                                class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
+                                                title="Editar">
+                                                <span class="material-symbols-outlined"
+                                                    style="font-size: 20px;">edit</span>
+                                            </button>
+                                            <button
+                                                class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+                                                title="Eliminar">
+                                                <span class="material-symbols-outlined"
+                                                    style="font-size: 20px;">delete</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- Row 3 -->
+                                <tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                                    <td class="p-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="size-10 rounded-full bg-cover bg-center"
+                                                data-alt="Portrait of Miguel Torres"
+                                                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAZmQczkiTD6uVJv20KGsmdhJLjPX7RN7uxfBDz9WWsQFhWVqkhmuApS9T3Xt5j7xW1TqY9kvkTR415e9gDh7EWdrnU83OI-Ffu6JTZAqUFrlaau_c1stXuAqb-SilgOvs95IeXocPlxbUgSCGNyc-zQ8fs2topR6IFCpKk1ycTD7QzO4tZpKBAq47lGbEHFZVsE2QEeieiAewjnC8MBoGCFgNwe8sJ6wITCKQpKamWdN1ZJmFxPnyekOJVDQDX2yoVlBRe12o2YOhD");'>
+                                            </div>
+                                            <div>
+                                                <p class="font-semibold text-slate-900 dark:text-white text-sm">Miguel
+                                                    Torres</p>
+                                                <p class="text-xs text-slate-500 dark:text-slate-400">
+                                                    m.torres@hermes.corp</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-4">
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">
                                             Ventas
                                         </span>
-</td>
-<td class="p-4 text-sm text-slate-600 dark:text-slate-300">
+                                    </td>
+                                    <td class="p-4 text-sm text-slate-600 dark:text-slate-300">
                                         Visualizador
                                     </td>
-<td class="p-4 text-sm text-slate-500 dark:text-slate-400 tabular-nums">
+                                    <td class="p-4 text-sm text-slate-500 dark:text-slate-400 tabular-nums">
                                         Ayer
                                     </td>
-<td class="p-4">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-700/50 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
-<span class="size-1.5 rounded-full bg-slate-400"></span>
+                                    <td class="p-4">
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-700/50 dark:text-slate-400 border border-slate-200 dark:border-slate-700">
+                                            <span class="size-1.5 rounded-full bg-slate-400"></span>
                                             Inactivo
                                         </span>
-</td>
-<td class="p-4 text-right">
-<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors" title="Editar">
-<span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
-</button>
-<button class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors" title="Eliminar">
-<span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
-</button>
-</div>
-</td>
-</tr>
-<!-- Row 4 -->
-<tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
-<td class="p-4">
-<div class="flex items-center gap-3">
-<div class="size-10 rounded-full bg-cover bg-center" data-alt="Portrait of Sofia Lopez" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDHfwpbBeZFNYTomn6fAvNxNfdAzsO7aP9jPyJ38Ov0aLteDXEsAkhW7q_qIO7E8Dxi7ZpYVDULJcQ1BDENTsWHgZ6hxoJcco8AeOH_fysYFjCXbQgUEU9l1fmHAjLbVfv7S7CX-ojcaS9AbkDqZY5V-o_RiT0wTSPS9PlB7YS2neBp9__t-rf8hJ96o3xh2J5t6jwYdgi8PYD8XI7-isTUVaDwaQM3XpaaGr1lQmdomw6ulfM5y77okTWysNVP4AzJPKEJuy83NJM6");'></div>
-<div>
-<p class="font-semibold text-slate-900 dark:text-white text-sm">Sofia Lopez</p>
-<p class="text-xs text-slate-500 dark:text-slate-400">sofia.l@hermes.corp</p>
-</div>
-</div>
-</td>
-<td class="p-4">
-<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-pink-50 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300">
+                                    </td>
+                                    <td class="p-4 text-right">
+                                        <div
+                                            class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button
+                                                class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
+                                                title="Editar">
+                                                <span class="material-symbols-outlined"
+                                                    style="font-size: 20px;">edit</span>
+                                            </button>
+                                            <button
+                                                class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+                                                title="Eliminar">
+                                                <span class="material-symbols-outlined"
+                                                    style="font-size: 20px;">delete</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- Row 4 -->
+                                <tr class="group hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors">
+                                    <td class="p-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="size-10 rounded-full bg-cover bg-center"
+                                                data-alt="Portrait of Sofia Lopez"
+                                                style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDHfwpbBeZFNYTomn6fAvNxNfdAzsO7aP9jPyJ38Ov0aLteDXEsAkhW7q_qIO7E8Dxi7ZpYVDULJcQ1BDENTsWHgZ6hxoJcco8AeOH_fysYFjCXbQgUEU9l1fmHAjLbVfv7S7CX-ojcaS9AbkDqZY5V-o_RiT0wTSPS9PlB7YS2neBp9__t-rf8hJ96o3xh2J5t6jwYdgi8PYD8XI7-isTUVaDwaQM3XpaaGr1lQmdomw6ulfM5y77okTWysNVP4AzJPKEJuy83NJM6");'>
+                                            </div>
+                                            <div>
+                                                <p class="font-semibold text-slate-900 dark:text-white text-sm">Sofia
+                                                    Lopez</p>
+                                                <p class="text-xs text-slate-500 dark:text-slate-400">
+                                                    sofia.l@hermes.corp</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="p-4">
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-pink-50 text-pink-700 dark:bg-pink-900/30 dark:text-pink-300">
                                             Recursos Humanos
                                         </span>
-</td>
-<td class="p-4 text-sm text-slate-600 dark:text-slate-300">
+                                    </td>
+                                    <td class="p-4 text-sm text-slate-600 dark:text-slate-300">
                                         Editor
                                     </td>
-<td class="p-4 text-sm text-slate-500 dark:text-slate-400 tabular-nums">
+                                    <td class="p-4 text-sm text-slate-500 dark:text-slate-400 tabular-nums">
                                         Hace 1 día
                                     </td>
-<td class="p-4">
-<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">
-<span class="size-1.5 rounded-full bg-emerald-500"></span>
+                                    <td class="p-4">
+                                        <span
+                                            class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 border border-emerald-100 dark:border-emerald-800">
+                                            <span class="size-1.5 rounded-full bg-emerald-500"></span>
                                             Activo
                                         </span>
-</td>
-<td class="p-4 text-right">
-<div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-<button class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors" title="Editar">
-<span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
-</button>
-<button class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors" title="Eliminar">
-<span class="material-symbols-outlined" style="font-size: 20px;">delete</span>
-</button>
-</div>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<!-- Pagination -->
-<div class="px-4 py-3 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
-<p class="text-sm text-slate-500 dark:text-slate-400">
-                            Mostrando <span class="font-medium text-slate-900 dark:text-white">1</span> a <span class="font-medium text-slate-900 dark:text-white">4</span> de <span class="font-medium text-slate-900 dark:text-white">48</span> resultados
+                                    </td>
+                                    <td class="p-4 text-right">
+                                        <div
+                                            class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button
+                                                class="p-1.5 text-slate-400 hover:text-primary hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
+                                                title="Editar">
+                                                <span class="material-symbols-outlined"
+                                                    style="font-size: 20px;">edit</span>
+                                            </button>
+                                            <button
+                                                class="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
+                                                title="Eliminar">
+                                                <span class="material-symbols-outlined"
+                                                    style="font-size: 20px;">delete</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination -->
+                    <div
+                        class="px-4 py-3 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                        <p class="text-sm text-slate-500 dark:text-slate-400">
+                            Mostrando <span class="font-medium text-slate-900 dark:text-white">1</span> a <span
+                                class="font-medium text-slate-900 dark:text-white">4</span> de <span
+                                class="font-medium text-slate-900 dark:text-white">48</span> resultados
                         </p>
-<div class="flex items-center gap-2">
-<button class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed">
-<span class="material-symbols-outlined" style="font-size: 18px;">chevron_left</span>
-</button>
-<div class="flex items-center gap-1">
-<button class="size-8 rounded-lg bg-primary text-white text-sm font-medium flex items-center justify-center">1</button>
-<button class="size-8 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium flex items-center justify-center">2</button>
-<button class="size-8 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium flex items-center justify-center">3</button>
-<span class="text-slate-400 px-1">...</span>
-<button class="size-8 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium flex items-center justify-center">12</button>
-</div>
-<button class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800">
-<span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
-</button>
-</div>
-</div>
-</div>
-</div>
-</div>
-</main>
-<!-- Hidden Modal for Delete Confirmation (Just for structural completeness as requested by "modal de confirmación") -->
-<div class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300" id="deleteModal">
-<div class="bg-white dark:bg-surface-dark rounded-xl shadow-2xl max-w-md w-full p-6 scale-95 transition-transform duration-300">
-<div class="flex items-center justify-center size-12 rounded-full bg-red-100 text-red-600 mb-4 mx-auto">
-<span class="material-symbols-outlined" style="font-size: 28px;">warning</span>
-</div>
-<h3 class="text-lg font-bold text-center text-slate-900 dark:text-white mb-2">¿Eliminar usuario?</h3>
-<p class="text-center text-slate-500 dark:text-slate-400 mb-6">Esta acción eliminará permanentemente a <strong class="text-slate-800 dark:text-slate-200">Ana García</strong> del sistema. No se puede deshacer.</p>
-<div class="flex gap-3">
-<button class="flex-1 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Cancelar</button>
-<button class="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-colors shadow-lg shadow-red-500/30">Eliminar</button>
-</div>
-</div>
-</div>
-<script src="js/utils.js"></script>
-<script>document.addEventListener('DOMContentLoaded', loadSidebar);</script>
-</body></html>
+                        <div class="flex items-center gap-2">
+                            <button
+                                class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">chevron_left</span>
+                            </button>
+                            <div class="flex items-center gap-1">
+                                <button
+                                    class="size-8 rounded-lg bg-primary text-white text-sm font-medium flex items-center justify-center">1</button>
+                                <button
+                                    class="size-8 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium flex items-center justify-center">2</button>
+                                <button
+                                    class="size-8 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium flex items-center justify-center">3</button>
+                                <span class="text-slate-400 px-1">...</span>
+                                <button
+                                    class="size-8 rounded-lg text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 text-sm font-medium flex items-center justify-center">12</button>
+                            </div>
+                            <button
+                                class="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800">
+                                <span class="material-symbols-outlined" style="font-size: 18px;">chevron_right</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <!-- Hidden Modal for Delete Confirmation (Just for structural completeness as requested by "modal de confirmación") -->
+    <div class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 opacity-0 pointer-events-none transition-opacity duration-300"
+        id="deleteModal">
+        <div
+            class="bg-white dark:bg-surface-dark rounded-xl shadow-2xl max-w-md w-full p-6 scale-95 transition-transform duration-300">
+            <div class="flex items-center justify-center size-12 rounded-full bg-red-100 text-red-600 mb-4 mx-auto">
+                <span class="material-symbols-outlined" style="font-size: 28px;">warning</span>
+            </div>
+            <h3 class="text-lg font-bold text-center text-slate-900 dark:text-white mb-2">¿Eliminar usuario?</h3>
+            <p class="text-center text-slate-500 dark:text-slate-400 mb-6">Esta acción eliminará permanentemente a
+                <strong class="text-slate-800 dark:text-slate-200">Ana García</strong> del sistema. No se puede
+                deshacer.</p>
+            <div class="flex gap-3">
+                <button
+                    class="flex-1 px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">Cancelar</button>
+                <button
+                    class="flex-1 px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-colors shadow-lg shadow-red-500/30">Eliminar</button>
+            </div>
+        </div>
+    </div>
+    <script src="js/utils.js"></script>
+    <script>document.addEventListener('DOMContentLoaded', loadSidebar);</script>
+</body>
+
+</html>

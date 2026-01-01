@@ -1,0 +1,11 @@
+{
+  "chatEnabled": true,
+  "documentUploadEnabled": true,
+  "moderationEnabled": false,
+  "language": "es",
+  "timezone": "mx",
+  "weeklyReports": true,
+  "openaiApiKey": "sk-xxxxxxxxxxxxxxxxxxxx",
+  "storageProvider": "azure",
+  "ssoEndpoint": "https://login.microsoftonline.com/..."
+}
