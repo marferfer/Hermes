@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+
+<html class="light" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hermes - Subir Documento</title>
+<!-- Google Fonts: Inter -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4b91e2", // Corporate Blue
+                        "primary-dark": "#3a7bc8",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#121820",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1e2329",
+                        "border-light": "#dce0e5",
+                        "border-dark": "#2d3748",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "body": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            font-size: 24px;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1;
+        }
+        
+        /* Custom Scrollbar for nicer look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #4b5563;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-slate-100 h-screen flex overflow-hidden selection:bg-primary/20">
+<!-- Sidebar Navigation -->
+<div id="sidebar"></div>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-full overflow-hidden relative">
+<!-- Header -->
+<header class="w-full px-8 py-6 bg-background-light dark:bg-background-dark flex items-center justify-between shrink-0 z-10">
+<div class="flex flex-col gap-1">
+<nav class="flex items-center text-xs text-slate-500 dark:text-slate-400 gap-2 mb-1">
+<span>Hermes</span>
+<span class="material-symbols-outlined text-[10px]">chevron_right</span>
+<span>Documentos</span>
+</nav>
+<h2 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Subir Documento</h2>
+</div>
+<!-- <button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark text-slate-700 dark:text-slate-200 text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm">
+<span class="material-symbols-outlined text-[20px]">arrow_back</span>
+<span>Volver a Biblioteca</span>
+</button> -->
+</header>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto px-8 pb-12">
+<div class="max-w-4xl mx-auto space-y-6">
+<!-- Main Form Card -->
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark overflow-hidden">
+<div class="p-6 md:p-8 space-y-8">
+<!-- Select Inputs Section -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Department Select -->
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-200" for="department">
+                                    Departamento Propietario <span class="text-red-500">*</span>
+</label>
+<div class="relative">
+<select class="w-full h-12 pl-4 pr-10 rounded-lg border-border-light dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-shadow appearance-none cursor-pointer" id="department">
+<option disabled="" selected="" value="">Seleccionar departamento...</option>
+<option value="hr">Recursos Humanos</option>
+<option value="it">Tecnología (TI)</option>
+<option value="finance">Finanzas</option>
+<option value="sales">Ventas</option>
+<option value="legal">Legal</option>
+<option value="ops">Operaciones</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-500">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+<!-- Visibility Select -->
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-200" for="visibility">
+                                    Visibilidad <span class="text-red-500">*</span>
+</label>
+<div class="relative">
+<select class="w-full h-12 pl-4 pr-10 rounded-lg border-border-light dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-shadow appearance-none cursor-pointer" id="visibility">
+<option value="dept">Solo mi departamento</option>
+<option value="public">Público (Toda la empresa)</option>
+<option value="private">Privado</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-slate-500">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Drag and Drop Zone -->
+<div class="space-y-2">
+<label class="block text-sm font-semibold text-slate-700 dark:text-slate-200">
+                                Adjuntar Archivos
+                            </label>
+<div class="group relative flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-border-light dark:border-slate-600 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-blue-50 dark:hover:bg-blue-900/10 hover:border-primary dark:hover:border-primary transition-all cursor-pointer">
+<div class="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
+<div class="size-16 rounded-full bg-blue-100 dark:bg-blue-900/30 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-[32px]">cloud_upload</span>
+</div>
+<p class="mb-2 text-lg font-semibold text-slate-700 dark:text-white">
+                                        Arrastra y suelta tus archivos aquí
+                                    </p>
+<p class="mb-4 text-sm text-slate-500 dark:text-slate-400">
+                                        o haz clic para explorar en tu ordenador
+                                    </p>
+<p class="text-xs text-slate-400 dark:text-slate-500">
+                                        Soporta: PDF, DOCX, TXT, PPTX, XLSX (Max 25MB)
+                                    </p>
+</div>
+<input accept=".pdf,.docx,.txt,.pptx,.xlsx" class="hidden" multiple="" type="file"/>
+</div>
+</div>
+<!-- Upload Queue / Status Feedback -->
+<div class="space-y-3 pt-2">
+<h3 class="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Estado de Subida</h3>
+<!-- Success Item -->
+<div class="flex items-center justify-between p-3 rounded-lg border border-green-200 dark:border-green-900 bg-green-50 dark:bg-green-900/20">
+<div class="flex items-center gap-3 overflow-hidden">
+<div class="bg-green-100 dark:bg-green-800 p-1.5 rounded text-green-600 dark:text-green-300">
+<span class="material-symbols-outlined text-[20px]">description</span>
+</div>
+<div class="flex flex-col min-w-0">
+<p class="text-sm font-medium text-slate-900 dark:text-white truncate">Reporte_Financiero_Q3.pdf</p>
+<p class="text-xs text-green-600 dark:text-green-400">Listo para subir</p>
+</div>
+</div>
+<button class="text-slate-400 hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Warning Item (Duplicate) -->
+<div class="flex items-center justify-between p-3 rounded-lg border border-yellow-200 dark:border-yellow-900 bg-yellow-50 dark:bg-yellow-900/20">
+<div class="flex items-center gap-3 overflow-hidden">
+<div class="bg-yellow-100 dark:bg-yellow-800 p-1.5 rounded text-yellow-600 dark:text-yellow-300">
+<span class="material-symbols-outlined text-[20px]">warning</span>
+</div>
+<div class="flex flex-col min-w-0">
+<p class="text-sm font-medium text-slate-900 dark:text-white truncate">Manual_Empleado_v2.docx</p>
+<p class="text-xs text-yellow-600 dark:text-yellow-400">Archivo duplicado: Se creará una nueva versión</p>
+</div>
+</div>
+<button class="text-slate-400 hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Error Item (Format) -->
+<div class="flex items-center justify-between p-3 rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-900/20">
+<div class="flex items-center gap-3 overflow-hidden">
+<div class="bg-red-100 dark:bg-red-800 p-1.5 rounded text-red-600 dark:text-red-300">
+<span class="material-symbols-outlined text-[20px]">error</span>
+</div>
+<div class="flex flex-col min-w-0">
+<p class="text-sm font-medium text-slate-900 dark:text-white truncate">backup_system.exe</p>
+<p class="text-xs text-red-600 dark:text-red-400">Error: Formato de archivo no permitido</p>
+</div>
+</div>
+<button class="text-slate-400 hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Footer Actions -->
+<div class="px-6 py-4 bg-slate-50 dark:bg-slate-800/50 border-t border-border-light dark:border-border-dark flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3">
+<button class="px-6 py-2.5 rounded-lg border border-border-light dark:border-slate-600 text-slate-700 dark:text-slate-200 font-medium hover:bg-white dark:hover:bg-slate-700 hover:shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-slate-200 dark:focus:ring-slate-700">
+                            Cancelar
+                        </button>
+<button class="px-6 py-2.5 rounded-lg bg-primary hover:bg-primary-dark text-white font-medium shadow-md shadow-primary/20 hover:shadow-lg hover:shadow-primary/30 transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
+                            Subir 2 Archivos
+                        </button>
+</div>
+</div>
+<div class="flex justify-center mt-8">
+<p class="text-xs text-slate-400 dark:text-slate-500 text-center max-w-md">
+                        Al subir archivos a Hermes, confirmas que tienes los derechos necesarios y que la información cumple con las políticas de confidencialidad de la empresa.
+                    </p>
+</div>
+</div>
+</div>
+</main>
+<script src="assets/js/utils.js"></script>
+<script>document.addEventListener('DOMContentLoaded', loadSidebar);</script>
+</body></html>

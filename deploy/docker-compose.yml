@@ -1,11 +1,9 @@
-version: '3.8'
-
 services:
   # ==============================
-  # KEYCLOAK - Autenticación
+  # KEYCLOAK - Sistema de autenticación
   # ==============================
   keycloak:
-    image: quay.io/keycloak/keycloak:24.0
+    image: quay.io/keycloak/keycloak:24.0.5
     container_name: hermes-keycloak
     ports:
       - "8080:8080"
@@ -15,23 +13,21 @@ services:
       KC_HOSTNAME: localhost
       KC_HOSTNAME_PORT: 8080
     command: start-dev
-    networks:
-      - hermes-net
+    volumes:
+      - keycloak_data:/opt/keycloak/data
 
   # ==============================
   # QDRANT - Índice vectorial
   # ==============================
   qdrant:
-    image: qdrant/qdrant:v1.9
+    image: qdrant/qdrant:v1.9.1
     container_name: hermes-qdrant
     ports:
       - "6333:6333"  # API REST
-      - "6334:6334"  # gRPC (opcional)
+      - "6334:6334"  # gRPC
     volumes:
-      - ./qdrant/storage:/qdrant/storage
-    networks:
-      - hermes-net
+      - qdrant_storage:/qdrant/storage
 
-networks:
-  hermes-net:
-    driver: bridge
+volumes:
+  keycloak_data:
+  qdrant_storage:

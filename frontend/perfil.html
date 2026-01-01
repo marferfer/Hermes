@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html class="light" lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Hermes - Mi Perfil</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<!-- Material Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script>
+tailwind.config = {
+    darkMode: "class",
+    theme: {
+        extend: {
+            colors: {
+                "primary": "#4b91e2",
+                "background-light": "#f6f7f8",
+                "background-dark": "#121820",
+                "text-primary": "#121417",
+                "text-secondary": "#657486",
+            },
+            fontFamily: {
+                "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+        },
+    },
+}
+</script>
+</head>
+<body class="font-display bg-background-light dark:bg-background-dark text-text-primary h-screen overflow-hidden flex flex-row">
+<!-- Sidebar -->
+<div id="sidebar"></div>
+<!-- Main Content -->
+<main class="flex-1 h-full overflow-y-auto bg-background-light dark:bg-background-dark">
+<div class="layout-container flex flex-col h-full max-w-[1200px] mx-auto px-6 md:px-12 py-8">
+<!-- Breadcrumbs -->
+<div class="flex items-center gap-2 mb-6">
+<a class="text-text-secondary hover:text-primary text-sm font-medium transition-colors" href="#">Inicio</a>
+<span class="text-slate-400 text-sm">/</span>
+<span class="text-text-primary dark:text-white text-sm font-medium">Mi Perfil</span>
+</div>
+<!-- Page Heading -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+<div>
+<h2 class="text-3xl md:text-4xl font-bold text-text-primary dark:text-white tracking-tight mb-2">Mi Perfil</h2>
+<p class="text-text-secondary dark:text-slate-400 text-base">Gestión de información personal y roles de acceso</p>
+</div>
+</div>
+<!-- Content Area: Profile Card -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Left Column: Identity Summary -->
+<div class="lg:col-span-1 flex flex-col gap-6">
+<div class="bg-white dark:bg-[#1a202c] rounded-xl p-6 shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col items-center text-center">
+<div class="relative mb-4">
+<div class="size-32 rounded-full overflow-hidden border-4 border-slate-50 dark:border-slate-700 shadow-inner bg-slate-100 flex items-center justify-center">
+<div class="bg-cover bg-center w-full h-full" id="profile-avatar"></div>
+</div>
+<div class="absolute bottom-1 right-1 bg-green-500 w-5 h-5 rounded-full border-2 border-white dark:border-[#1a202c]" title="Activo"></div>
+</div>
+<h3 class="text-xl font-bold text-text-primary dark:text-white mb-1" id="profile-name">Cargando...</h3>
+<p class="text-text-secondary dark:text-slate-400 text-sm mb-4" id="profile-email">Cargando...</p>
+<div class="w-full pt-4 border-t border-slate-100 dark:border-slate-700 grid grid-cols-2 gap-2">
+<div class="flex flex-col items-center p-2 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+<span class="text-xs text-text-secondary dark:text-slate-400 uppercase tracking-wider font-semibold">ID</span>
+<span class="text-sm font-bold text-text-primary dark:text-white" id="profile-sub">-</span>
+</div>
+<div class="flex flex-col items-center p-2 rounded-lg bg-slate-50 dark:bg-slate-800/50">
+<span class="text-xs text-text-secondary dark:text-slate-400 uppercase tracking-wider font-semibold">Status</span>
+<span class="text-sm font-bold text-green-600 dark:text-green-400">Activo</span>
+</div>
+</div>
+</div>
+<!-- Quick Stats / Badges -->
+<div class="bg-primary/5 dark:bg-primary/10 rounded-xl p-5 border border-primary/10 dark:border-primary/20 flex flex-col gap-3">
+<div class="flex items-center gap-3">
+<div class="bg-primary/20 p-2 rounded-full text-primary">
+<span class="material-symbols-outlined">shield</span>
+</div>
+<div>
+<h4 class="text-sm font-bold text-text-primary dark:text-white">Nivel de Seguridad</h4>
+<p class="text-xs text-text-secondary dark:text-slate-400">Autenticación de Dos Factores activa</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Detailed Information -->
+<div class="lg:col-span-2">
+<div class="bg-white dark:bg-[#1a202c] rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
+<h3 class="font-bold text-lg text-text-primary dark:text-white">Detalles de la Cuenta</h3>
+<span class="text-xs font-medium px-2 py-1 rounded bg-slate-200 dark:bg-slate-700 text-text-secondary dark:text-slate-300">Solo Lectura</span>
+</div>
+<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
+<!-- Field: Usuario -->
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-semibold uppercase tracking-wider text-text-secondary dark:text-slate-400 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">account_circle</span>
+Usuario
+</label>
+<p class="text-base font-medium text-text-primary dark:text-white pl-6" id="profile-username">-</p>
+</div>
+<!-- Field: Email -->
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-semibold uppercase tracking-wider text-text-secondary dark:text-slate-400 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">mail</span>
+Email Corporativo
+</label>
+<p class="text-base font-medium text-text-primary dark:text-white pl-6" id="profile-email-detail">-</p>
+</div>
+<!-- Field: Departamento -->
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-semibold uppercase tracking-wider text-text-secondary dark:text-slate-400 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">apartment</span>
+Departamento
+</label>
+<div class="pl-6 pt-1">
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border border-blue-100 dark:border-blue-800" id="profile-department">-</span>
+</div>
+</div>
+<!-- Field: Last Login -->
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-semibold uppercase tracking-wider text-text-secondary dark:text-slate-400 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">schedule</span>
+Último Acceso
+</label>
+<p class="text-base font-medium text-text-primary dark:text-white pl-6" id="profile-last-login">-</p>
+</div>
+<!-- Field: Roles -->
+<div class="col-span-1 md:col-span-2 flex flex-col gap-3 mt-2">
+<label class="text-xs font-semibold uppercase tracking-wider text-text-secondary dark:text-slate-400 flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">lock_person</span>
+Roles Asignados
+</label>
+<div class="pl-6 flex flex-wrap gap-2" id="profile-roles-container">
+<!-- Roles se insertarán aquí dinámicamente -->
+</div>
+<p class="pl-6 text-xs text-text-secondary dark:text-slate-500 mt-1">
+Estos roles son gestionados centralmente por Keycloak y determinan su acceso a documentos y departamentos.
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+
+<script src="assets/js/utils.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', loadSidebar);
+  </script>
+</body>
+</html>

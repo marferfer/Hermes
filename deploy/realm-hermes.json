@@ -1,0 +1,210 @@
+{
+  "id": "hermes",
+  "realm": "hermes",
+  "displayName": "Hermes - Sistema de Conocimiento",
+  "displayNameHtml": "<div class=\"kc-logo-text\"><span>Hermes</span></div>",
+  "notBefore": 0,
+  "defaultSignatureAlgorithm": "RS256",
+  "revokeRefreshToken": false,
+  "refreshTokenMaxReuse": 0,
+  "accessTokenLifespan": 300,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "ssoSessionIdleTimeoutRememberMe": 0,
+  "ssoSessionMaxLifespanRememberMe": 0,
+  "offlineSessionIdleTimeout": 2592000,
+  "offlineSessionMaxLifespan": 5184000,
+  "offlineSessionMaxLifespanEnabled": false,
+  "clientSessionIdleTimeout": 0,
+  "clientSessionMaxLifespan": 0,
+  "clientOfflineSessionIdleTimeout": 0,
+  "clientOfflineSessionMaxLifespan": 0,
+  "accessCodeLifespan": 60,
+  "accessCodeLifespanUserAction": 300,
+  "accessCodeLifespanLogin": 1800,
+  "actionTokenGeneratedByAdminLifespan": 43200,
+  "actionTokenGeneratedByUserLifespan": 300,
+  "oauth2DeviceCodeLifespan": 600,
+  "oauth2DevicePollingInterval": 5,
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "registrationEmailAsUsername": false,
+  "rememberMe": false,
+  "verifyEmail": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": false,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 30,
+  "roles": {
+    "realm": [
+      {
+        "id": "role-1014-sistemas",
+        "name": "[1014] Sistemas",
+        "description": "Departamento de Sistemas",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "hermes"
+      },
+      {
+        "id": "role-it",
+        "name": "IT",
+        "description": "Departamento de IT",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "hermes"
+      },
+      {
+        "id": "role-finanzas",
+        "name": "Finanzas",
+        "description": "Departamento de Finanzas",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "hermes"
+      },
+      {
+        "id": "role-rrhh",
+        "name": "RRHH",
+        "description": "Departamento de Recursos Humanos",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "hermes"
+      },
+      {
+        "id": "role-marketing",
+        "name": "Marketing",
+        "description": "Departamento de Marketing",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "hermes"
+      },
+      {
+        "id": "role-direccion",
+        "name": "Dirección",
+        "description": "Dirección",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "hermes"
+      }
+    ],
+    "client": {}
+  },
+  "clients": [
+    {
+      "id": "hermes-app",
+      "clientId": "hermes-app",
+      "name": "Hermes RAG",
+      "description": "Aplicación de conocimiento corporativo",
+      "rootUrl": "http://localhost:8501",
+      "adminUrl": "http://localhost:8501",
+      "baseUrl": "/",
+      "surrogateAuthRequired": false,
+      "enabled": true,
+      "alwaysDisplayInConsole": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "hermes-secret-12345",
+      "redirectUris": [
+        "http://localhost:8501/*"
+      ],
+      "webOrigins": [
+        "http://localhost:8501"
+      ],
+      "notBefore": 0,
+      "bearerOnly": false,
+      "consentRequired": false,
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "publicClient": false,
+      "frontchannelLogout": true,
+      "protocol": "openid-connect",
+      "attributes": {
+        "oidc.ciba.grant.enabled": "false",
+        "login.url": "",
+        "oauth2.device.authorization.grant.enabled": "false",
+        "backchannel.logout.session.required": "true",
+        "backchannel.logout.revoke.offline.tokens": "false"
+      },
+      "authenticationFlowBindingOverrides": {},
+      "fullScopeAllowed": true,
+      "nodeReRegistrationTimeout": -1,
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "roles",
+        "profile",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ]
+    }
+  ],
+  "defaultDefaultClientScopes": [
+    "role_list",
+    "profile",
+    "email",
+    "roles",
+    "web-origins",
+    "acr"
+  ],
+  "defaultOptionalClientScopes": [
+    "offline_access",
+    "address",
+    "phone",
+    "microprofile-jwt"
+  ],
+  "browserSecurityHeaders": {
+    "contentSecurityPolicyReportOnly": "",
+    "contentSecurityPolicy": "frame-src 'self'; frame-ancestors 'self'; object-src 'none';",
+    "strictTransportSecurity": "max-age=31536000; includeSubDomains",
+    "xContentTypeOptions": "nosniff",
+    "xRobotsTag": "noindex, nofollow",
+    "xFrameOptions": "SAMEORIGIN",
+    "xXSSProtection": "1; mode=block"
+  },
+  "smtpServer": {},
+  "loginTheme": "keycloak",
+  "accountTheme": "keycloak",
+  "adminTheme": "keycloak",
+  "emailTheme": "keycloak",
+  "eventsEnabled": false,
+  "eventsListeners": [
+    "jboss-logging"
+  ],
+  "enabledEventTypes": [],
+  "adminEventsEnabled": false,
+  "adminEventsDetailsEnabled": false,
+  "identityProviders": [],
+  "identityProviderMappers": [],
+  "components": {},
+  "internationalizationEnabled": false,
+  "supportedLocales": [],
+  "authenticationFlows": [],
+  "authenticatorConfig": [],
+  "requiredActions": [],
+  "browserFlow": "browser",
+  "registrationFlow": "registration",
+  "directGrantFlow": "direct grant",
+  "resetCredentialsFlow": "reset credentials",
+  "clientAuthenticationFlow": "clients",
+  "dockerAuthenticationFlow": "docker auth",
+  "attributes": {
+    "ciba_auth_requested_user_hint": "preferred_username"
+  },
+  "keycloakVersion": "24.0.5",
+  "userManagedAccessAllowed": false
+}

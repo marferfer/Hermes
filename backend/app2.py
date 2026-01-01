@@ -2,26 +2,145 @@ import streamlit as st
 import os
 import json
 from pathlib import Path
+import sys
+sys.path.append('src')
+from auth import authenticate, logout, KeycloakAuth
 
-# --- Configuración ---
-st.set_page_config(page_title="Hermes - RAG con Permisos", layout="wide")
-# --- Inicialización de Session State ---
-if "user_department" not in st.session_state:
-    st.session_state.user_department = "[1014] Sistemas"  # valor por defecto
+# --- Inicialización obligatoria de Session State ---
+if "user_info" not in st.session_state:
+    st.session_state.user_info = {"authenticated": False}
 if "active_section" not in st.session_state:
     st.session_state.active_section = "Chat"
 
-# --- Estado de la sección activa ---
-if "active_section" not in st.session_state:
-    st.session_state.active_section = "Chat"
+# --- Crear UNA SOLA instancia de KeycloakAuth ---
+if "auth_instance" not in st.session_state:
+    st.session_state.auth_instance = KeycloakAuth()
 
-# --- Menú lateral ---
+
+
+auth = st.session_state.auth_instance
+st.session_state.user_info = auth.login()
+
+# --- Verificar autenticación y manejar redirección de Keycloak ---
+auth = KeycloakAuth()
+st.session_state.user_info = auth.login()
+
+
+# --- Verificar autenticación y manejar redirección de Keycloak ---
+st.session_state.user_info = auth.login()
+
+# --- Pantalla de login si no está autenticado ---
+# --- Pantalla de login si no está autenticado ---
+if not st.session_state.user_info["authenticated"]:
+    # Estilos CSS personalizados
+    st.markdown("""
+    <style>
+    .login-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 80vh;
+        padding: 2rem;
+        text-align: center;
+        background-color: #f8f9fa;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .login-title {
+        font-size: 2.8rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+        color: #4A90E2;
+        letter-spacing: -0.5px;
+    }
+    .login-subtitle {
+        font-size: 1.3rem;
+        color: #666;
+        margin-bottom: 2rem;
+        max-width: 600px;
+        line-height: 1.6;
+    }
+    .login-button {
+        background-color: #4A90E2;
+        color: white;
+        border: none;
+        padding: 0.8rem 2.2rem;
+        font-size: 1.15rem;
+        font-weight: 600;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+        margin: 1rem 0;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .login-button:hover {
+        background-color: #357ABD;
+        transform: translateY(-2px) scale(1.02);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    }
+    .login-icon {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+        color: #4A90E2;
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    .security-note {
+        color: #888;
+        font-size: 0.95rem;
+        margin-top: 1.5rem;
+        max-width: 500px;
+        font-style: italic;
+    }
+    .footer {
+        position: fixed;
+        bottom: 1rem;
+        width: 100%;
+        text-align: center;
+        color: #999;
+        font-size: 0.85rem;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+    # Contenido de la pantalla de login
+    # st.markdown('<div class="login-container">', unsafe_allow_html=True)
+    st.markdown('<div class="login-icon">🔐</div>', unsafe_allow_html=True)
+    st.markdown('<h1 class="login-title">Hermes</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="login-subtitle">Sistema de Conocimiento Corporativo con Control de Acceso</p>', unsafe_allow_html=True)
+    
+    # Botón de login mejorado
+    auth = KeycloakAuth()
+    login_url = auth.get_auth_url()
+    st.markdown(f'<a href="{login_url}" class="login-button">🔐 Iniciar sesión con Keycloak</a>', unsafe_allow_html=True)
+    
+    st.markdown('<p class="security-note">🔒 Autenticación corporativa segura • Todos los datos permanecen en la red local</p>', unsafe_allow_html=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+    
+    # Pie de página
+    st.markdown('<div class="footer">© 2025 Hermes RAG System · Departamento de Sistemas [1014]</div>', unsafe_allow_html=True)
+    
+    st.stop()
+
+# --- Menú lateral para usuarios autenticados ---
 with st.sidebar:
-    # Título en la parte superior
     st.title(" Hermes")
+    st.markdown(f"**{st.session_state.user_info['username']}**")
+    st.markdown(f"_{st.session_state.user_info['department']}_")
     st.markdown("---")
     
-    # Navegación por secciones
+    # Sincronizar con el sistema de permisos existente
+    st.session_state.user_department = st.session_state.user_info["department"]
+    
     st.markdown("### 📌 Navegación")
     if st.button("💬 Chat", use_container_width=True):
         st.session_state.active_section = "Chat"
@@ -31,6 +150,10 @@ with st.sidebar:
         st.session_state.active_section = "Subir"
     if st.button("👤 Mi Perfil", use_container_width=True):
         st.session_state.active_section = "Perfil"
+    if st.button("🚪 Cerrar sesión", use_container_width=True):
+        logout()
+        st.session_state.user_info = {"authenticated": False}
+        st.rerun()
 
 # --- Crear carpetas ---
 os.makedirs("docs", exist_ok=True)
@@ -87,7 +210,7 @@ if st.session_state.active_section == "Chat":
 # ==============================
 elif st.session_state.active_section == "Biblioteca":
     st.title("📚 Biblioteca")
-    st.markdown(f"_Documentos accesibles para: **{st.session_state['user_department']}**_")
+    st.markdown(f"_Documentos accesibles para: **{st.session_state.user_info['department']}**_")
     
     if "confirm_delete" not in st.session_state:
         st.session_state.confirm_delete = None
@@ -230,7 +353,7 @@ elif st.session_state.active_section == "Biblioteca":
             st.info("🔍 No hay documentos que coincidan con los criterios de búsqueda y filtros.")
     else:
         st.info("No tienes acceso a ningún documento. ¡Sube uno o cambia de departamento!")
-        
+
 # ==============================
 # SECCIÓN: SUBIR DOCUMENTO
 # ==============================
@@ -329,28 +452,13 @@ elif st.session_state.active_section == "Subir":
             with status_placeholder.container():
                 st.error(f"❌ Error al procesar los archivos: {str(e)}")
                 st.button("↩️ Reintentar", on_click=lambda: st.rerun())
-                
+
 # ==============================
 # SECCIÓN: MI PERFIL
 # ==============================
 elif st.session_state.active_section == "Perfil":
     st.title("👤 Mi Perfil")
-    
-    st.markdown("### 📋 Información de usuario")
-    st.markdown("Selecciona tu departamento para personalizar tu experiencia.")
-    
-    dept_options = ["[1014] Sistemas", "IT", "Finanzas", "RRHH", "Marketing", "Dirección"]
-    
-    selected_dept = st.selectbox(
-        "Departamento",
-        dept_options,
-        index=dept_options.index(st.session_state.user_department),  # usa el valor actual
-        help="Tu departamento determina qué documentos puedes ver y gestionar."
-    )
-
-    if st.button("💾 Guardar cambios", type="primary"):
-        st.session_state.user_department = selected_dept
-        st.success("✅ Perfil actualizado correctamente.")
-    
-    st.markdown("---")
-    st.markdown(f"**Departamento actual:** `{st.session_state.get('user_department', 'No establecido')}`")
+    st.markdown(f"**Usuario:** {st.session_state.user_info['username']}")
+    st.markdown(f"**Email:** {st.session_state.user_info['email']}")
+    st.markdown(f"**Departamento:** {st.session_state.user_info['department']}")
+    st.markdown(f"**Roles:** {', '.join(st.session_state.user_info['roles'])}")
