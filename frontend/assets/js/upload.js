@@ -115,13 +115,19 @@ function calculateHash(file) {
 async function uploadFileToServer(file, meta) {
     const formData = new FormData();
     formData.append('files', file);
-    formData.append('metadata', JSON.stringify(meta));
+    // Enviar metadata como array (aunque sea un solo archivo)
+    formData.append('metadata', JSON.stringify([meta]));
 
-    const response = await fetch('http://localhost:3000/upload', {
+    const response = await fetch('http://localhost:8000/api/documents/upload', {
         method: 'POST',
         body: formData
     });
 
+    if (!response.ok) {
+        const error = await response.json().catch(() => ({detail: "Error desconocido"}));
+        throw new Error(error.detail || "Error en la subida");
+    }
+    
     return await response.json();
 }
 

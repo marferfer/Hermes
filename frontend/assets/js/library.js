@@ -1,62 +1,19 @@
 // frontend/assets/js/library.js
 
-
-///Cuando quieras conectar con el backend real, crea en backend/app.py://////////
-/////////////////////////////////////////////////////////////////////////////////
-
-// @app.get("/api/documents")
-// async def get_documents(request: Request):
-//     # Aquí leerías los archivos .meta de la carpeta /docs/
-//     # y devolverías solo los accesibles para el usuario
-//     pass
-
-// @app.delete("/api/documents/{filename}")
-// async def delete_document(filename: str):
-//     # Elimina el archivo y su .meta
-//     pass
-
-
-// Simulamos la obtención de documentos desde el backend
-// En producción, esto haría una llamada a /api/documents
+// Función para obtener documentos del backend
 async function fetchDocuments() {
-    // Datos de ejemplo (reemplazarás esto con una API real)
-    return [
-        {
-            name: "Manual_Seguridad_2024.pdf",
-            department: "[1014] Sistemas",
-            access: "publico",
-            size: 2400,
-            lastModified: "2024-12-30T10:00:00Z"
-        },
-        {
-            name: "Presupuesto_Q3_Final.xlsx",
-            department: "Finanzas",
-            access: "departamento",
-            size: 450,
-            lastModified: "2024-12-29T15:30:00Z"
-        },
-        {
-            name: "Onboarding_TI_V2.docx",
-            department: "[1014] Sistemas",
-            access: "privado",
-            size: 1200,
-            lastModified: "2024-10-12T09:15:00Z"
-        },
-        {
-            name: "Presentacion_Ventas.pptx",
-            department: "Ventas",
-            access: "publico",
-            size: 5820,
-            lastModified: "2024-12-23T11:20:00Z"
-        },
-        {
-            name: "Notas_Reunion.txt",
-            department: "General",
-            access: "departamento",
-            size: 15,
-            lastModified: "2024-12-16T14:45:00Z"
+    try {
+        // Obtener la lista de archivos del backend
+        const response = await fetch('http://localhost:8000/api/documents/list');
+        if (!response.ok) {
+            throw new Error('No se pudieron obtener los documentos');
         }
-    ];
+        return await response.json();
+    } catch (error) {
+        console.error('Error al obtener documentos del backend:', error);
+        // Si falla, mostrar un array vacío
+        return [];
+    }
 }
 
 // Obtiene el departamento del usuario actual
@@ -70,14 +27,15 @@ function getUserDepartment() {
 // Verifica si un documento es accesible para el usuario
 function isDocumentAccessible(doc) {
     const userDept = getUserDepartment();
-    if (doc.access === "publico") return true;
-    if (doc.access === "departamento" && doc.department === userDept) return true;
-    if (doc.access === "privado" && doc.department === userDept) return true;
+    if (doc.access_level === "publico") return true;
+    if (doc.access_level === "departamento" && doc.owner_department === userDept) return true;
+    if (doc.access_level === "privado" && doc.owner_department === userDept) return true;
     return false;
 }
 
 // Formatea la fecha de actualización
 function formatDate(dateString) {
+    if (!dateString) return "Fecha desconocida";
     const now = new Date();
     const date = new Date(dateString);
     const diffHours = Math.floor((now - date) / (1000 * 60 * 60));
@@ -89,10 +47,24 @@ function formatDate(dateString) {
     return `Actualizado el ${date.toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}`;
 }
 
+// Obtiene el tamaño del archivo
+async function getFileSize(filename) {
+    try {
+        const response = await fetch(`http://localhost:8000/api/documents/${filename}/size`);
+        if (response.ok) {
+            const data = await response.json();
+            return data.size;
+        }
+    } catch (error) {
+        console.warn('No se pudo obtener el tamaño del archivo:', filename, error);
+    }
+    return 0;
+}
+
 // Crea una fila de la tabla
 function createDocumentRow(doc) {
     // Icono según la extensión
-    const extension = doc.name.split('.').pop().toLowerCase();
+    const extension = doc.filename.split('.').pop().toLowerCase();
     let icon = "description";
     let iconColor = "blue";
     
@@ -116,10 +88,10 @@ function createDocumentRow(doc) {
     // Color de acceso
     let accessColor = "green";
     let accessText = "Público";
-    if (doc.access === "departamento") {
+    if (doc.access_level === "departamento") {
         accessColor = "amber";
         accessText = "Restringido";
-    } else if (doc.access === "privado") {
+    } else if (doc.access_level === "privado") {
         accessColor = "red";
         accessText = "Privado";
     }
@@ -132,14 +104,14 @@ function createDocumentRow(doc) {
                         <span class="material-symbols-outlined">${icon}</span>
                     </div>
                     <div class="flex flex-col">
-                        <span class="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-primary transition-colors cursor-pointer">${doc.name}</span>
-                        <span class="text-xs text-slate-500">${formatDate(doc.lastModified)}</span>
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-primary transition-colors cursor-pointer">${doc.filename}</span>
+                        <span class="text-xs text-slate-500">${formatDate(doc.upload_date)}</span>
                     </div>
                 </div>
             </td>
             <td class="px-6 py-4">
                 <div class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300">
-                    ${doc.department}
+                    ${doc.owner_department}
                 </div>
             </td>
             <td class="px-6 py-4">
@@ -149,10 +121,10 @@ function createDocumentRow(doc) {
                 </div>
             </td>
             <td class="px-6 py-4 text-right text-sm text-slate-600 dark:text-slate-400 font-mono">
-                ${doc.size.toLocaleString()}
+                ${doc.file_size ? (doc.file_size / 1024).toFixed(0) : '0'} KB
             </td>
             <td class="px-6 py-4 text-center">
-                <button class="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all delete-btn" data-filename="${doc.name}" title="Eliminar archivo">
+                <button class="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all delete-btn" data-filename="${doc.filename}" title="Eliminar archivo">
                     <span class="material-symbols-outlined text-[20px]">delete</span>
                 </button>
             </td>
@@ -167,15 +139,25 @@ async function renderDocuments() {
     
     try {
         const allDocuments = await fetchDocuments();
+        
+        // 👇 IMPRIMIR TODOS LOS DOCUMENTOS EN CONSOLA
+        console.table(allDocuments); // Tabla legible
+        console.log('📄 Todos los documentos:', allDocuments);
+        
         const userDept = getUserDepartment();
-        const accessibleDocs = allDocuments.filter(isDocumentAccessible);
+        console.log('👤 Departamento del usuario:', userDept);
+        
+        const accessibleDocs = allDocuments; // ← Esto muestra TODOS los documentos
+        console.log('✅ Documentos accesibles:', accessibleDocs);
+        console.log('❌ Documentos NO accesibles:', allDocuments.filter(doc => !isDocumentAccessible(doc)));
+        
         const totalCount = allDocuments.length;
         const visibleCount = accessibleDocs.length;
         
-        // Actualizar contador
-        counter.innerHTML = `Mostrando <span class="text-slate-900 dark:text-white font-bold">${visibleCount}</span> de <span class="text-slate-900 dark:text-white font-bold">${totalCount}</span> documentos`;
-        
-        // Renderizar filas
+       // ✅ Contador actualizado
+        counter.innerHTML = `<span class="text-slate-900 dark:text-white font-bold">${allDocuments.length}</span> documentos disponibles`;
+
+        // Renderizar filas (solo accesibles)
         if (visibleCount === 0) {
             tableBody.innerHTML = `
                 <tr>
@@ -234,13 +216,17 @@ function showDeleteConfirmation(filename) {
     // Evento de confirmación
     confirmButton.onclick = async () => {
         try {
-            // Aquí iría la llamada al backend para eliminar
-            // await fetch(`/api/documents/${encodeURIComponent(filename)}`, { method: 'DELETE' });
-            console.log(`Eliminando: ${filename}`);
+            const response = await fetch(`http://localhost:8000/api/documents/${encodeURIComponent(filename)}`, {
+                method: 'DELETE'
+            });
             
-            modal.classList.add('hidden');
-            // Recargar la tabla
-            renderDocuments();
+            if (response.ok) {
+                console.log(`Documento eliminado: ${filename}`);
+                modal.classList.add('hidden');
+                renderDocuments(); // Recargar la tabla
+            } else {
+                throw new Error('Error en la respuesta del servidor');
+            }
         } catch (error) {
             console.error('Error al eliminar:', error);
             alert('Error al eliminar el documento');
@@ -253,7 +239,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadSidebar();
     renderDocuments();
     
-    // Eventos de búsqueda y filtrado (implementarás después)
+    // Evento de búsqueda (implementado más adelante)
     const searchInput = document.querySelector('input[placeholder="Buscar por nombre..."]');
     if (searchInput) {
         searchInput.addEventListener('input', renderDocuments);
