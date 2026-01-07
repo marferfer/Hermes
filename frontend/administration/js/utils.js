@@ -49,7 +49,13 @@ async function loadSidebar() {
 
 // Función de logout
 function logout() {
-  alert("Logout deshabilitado en modo desarrollo");
+  //alert("Logout deshabilitado en modo desarrollo");
+  Swal.fire({
+      icon: "error",
+      title: "Oops...",
+      text: "Logout deshabilitado en modo desarrollo",
+      //footer: '<a href="#">Why do I have this issue?</a>'
+    });
 }
 
 
@@ -85,7 +91,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Botón de guardar
     document.querySelector('button.flex.items-center.gap-2.bg-primary').addEventListener('click', () => {
         // Aquí irían las validaciones y llamada a API real
-        alert('✅ Configuración guardada');
+        //alert('✅ Configuración guardada');
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "✅ Configuración guardada",
+          //footer: '<a href="#">Why do I have this issue?</a>'
+        });
     });
     
     // Aplicar restricciones inmediatamente

@@ -17,6 +17,9 @@
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
         rel="stylesheet" />
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf_viewer.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script id="tailwind-config">
         tailwind.config = {
             darkMode: "class",
@@ -83,45 +86,97 @@
                             <div class="relative w-full md:max-w-xs group">
                                 <span
                                     class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">search</span>
-                                <input
+                                <input id="search-input"
                                     class="w-full pl-10 pr-4 py-2.5 bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none text-slate-700 dark:text-slate-200 placeholder:text-slate-400"
                                     placeholder="Buscar por nombre..." type="text" />
                             </div>
-                            <!-- Dept Filter -->
-                            <div class="space-y-2">
-                                
+
+                            <!-- Dept Filter - MULTIPLE -->
+                            <div class="relative min-w-[180px]">
                                 <div class="relative">
-                                    <select
-                                        class="w-full h-12 pl-4 pr-10 rounded-lg border-border-light dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-shadow appearance-none cursor-pointer"
-                                        id="department">
-                                        <option disabled="" selected="" value="">Seleccionar departamento...</option>
-                                        <option value="hr">Recursos Humanos</option>
-                                        <option value="it">Tecnología (TI)</option>
-                                        <option value="finance">Finanzas</option>
-                                        <option value="sales">Ventas</option>
-                                        <option value="legal">Legal</option>
-                                        <option value="ops">Operaciones</option>
-                                    </select>
+                                    <button id="dept-toggle"
+                                        class="w-full flex items-center justify-between px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
+                                        <span class="flex items-center gap-2">
+                                            <span
+                                                class="material-symbols-outlined text-slate-400 text-[18px]">domain</span>
+                                            <span id="dept-selected-text">Todos los departamentos</span>
+                                        </span>
+                                        <span
+                                            class="material-symbols-outlined text-slate-400 text-[18px]">expand_more</span>
+                                    </button>
+                                    <!-- Dropdown de departamentos múltiples -->
+                                    <div id="dept-dropdown"
+                                        class="hidden absolute z-10 mt-1 w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg">
+                                        <div class="p-2 max-h-60 overflow-y-auto">
+                                            <label
+                                                class="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded cursor-pointer">
+                                                <input type="checkbox" class="dept-checkbox" value="all" checked>
+                                                <span class="text-sm text-slate-700 dark:text-slate-300">Todos</span>
+                                            </label>
+                                            <div class="border-t border-slate-200 dark:border-slate-700 my-1"></div>
+                                            <label
+                                                class="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded cursor-pointer">
+                                                <input type="checkbox" class="dept-checkbox" value="[1014] Sistemas">
+                                                <span class="text-sm text-slate-700 dark:text-slate-300">[1014]
+                                                    Sistemas</span>
+                                            </label>
+                                            <label
+                                                class="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded cursor-pointer">
+                                                <input type="checkbox" class="dept-checkbox" value="RRHH">
+                                                <span class="text-sm text-slate-700 dark:text-slate-300">Recursos
+                                                    Humanos</span>
+                                            </label>
+                                            <label
+                                                class="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded cursor-pointer">
+                                                <input type="checkbox" class="dept-checkbox" value="Finanzas">
+                                                <span class="text-sm text-slate-700 dark:text-slate-300">Finanzas</span>
+                                            </label>
+                                            <label
+                                                class="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded cursor-pointer">
+                                                <input type="checkbox" class="dept-checkbox" value="IT">
+                                                <span class="text-sm text-slate-700 dark:text-slate-300">Tecnología
+                                                    (TI)</span>
+                                            </label>
+                                            <label
+                                                class="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded cursor-pointer">
+                                                <input type="checkbox" class="dept-checkbox" value="Marketing">
+                                                <span
+                                                    class="text-sm text-slate-700 dark:text-slate-300">Marketing</span>
+                                            </label>
+                                            <label
+                                                class="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded cursor-pointer">
+                                                <input type="checkbox" class="dept-checkbox" value="Dirección">
+                                                <span
+                                                    class="text-sm text-slate-700 dark:text-slate-300">Dirección</span>
+                                            </label>
+                                            <label
+                                                class="flex items-center gap-2 px-2 py-1.5 hover:bg-slate-100 dark:hover:bg-slate-700 rounded cursor-pointer">
+                                                <input type="checkbox" class="dept-checkbox" value="General">
+                                                <span class="text-sm text-slate-700 dark:text-slate-300">General</span>
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <!-- Visibility Select -->
-                            <div class="space-y-2">
-                                
-                                <div class="relative">
-                                    <select
-                                        class="w-full h-12 pl-4 pr-10 rounded-lg border-border-light dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-shadow appearance-none cursor-pointer"
-                                        id="visibility">
-                                        <option value="dept">Solo mi departamento</option>
-                                        <option value="public">Público (Toda la empresa)</option>
-                                        <option value="private">Privado</option>
-                                    </select>
-                                </div>
+
+
+                            <!-- Visibility Filter -->
+                            <div class="relative min-w-[160px]">
+                                <select id="visibility-filter"
+                                    class="w-full flex items-center justify-between px-3 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm text-slate-600 dark:text-slate-300 hover:border-slate-300 dark:hover:border-slate-600 transition-colors appearance-none">
+                                    <option value="all">Todos los accesos</option>
+                                    <option value="publico">Público</option>
+                                    <option value="departamento">Solo mi departamento</option>
+                                    <option value="privado">Privado</option>
+                                </select>
                             </div>
                         </div>
+
                         <!-- Counter -->
                         <div class="text-sm text-slate-500 font-medium whitespace-nowrap">
-                            Mostrando <span class="text-slate-900 dark:text-white font-bold">5</span> de <span
-                                class="text-slate-900 dark:text-white font-bold">124</span> documentos
+                            Mostrando <span id="filtered-count"
+                                class="text-slate-900 dark:text-white font-bold">0</span> de <span id="total-count"
+                                class="text-slate-900 dark:text-white font-bold">0</span> documentos
                         </div>
                     </div>
                     <!-- Table Container -->
@@ -353,17 +408,17 @@
                             </table>
                         </div>
                         <!-- Footer / Pagination -->
-                        <div
-                            class="bg-slate-50 dark:bg-slate-800/50 px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
-                            <div class="hidden sm:flex text-sm text-slate-500">
-                                Página 1 de 12
+                        <div id="pagination-container"
+                            class="hidden bg-slate-50 dark:bg-slate-800/50 px-6 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between">
+                            <div id="pagination-info" class="hidden sm:block text-sm text-slate-500">
+                                Página <span id="current-page">1</span> de <span id="total-pages">1</span>
                             </div>
                             <div class="flex gap-2">
-                                <button
+                                <button id="prev-page"
                                     class="px-3 py-1.5 rounded-md border border-slate-300 dark:border-slate-600 text-sm text-slate-500 dark:text-slate-400 opacity-50 cursor-not-allowed">
                                     Anterior
                                 </button>
-                                <button
+                                <button id="next-page"
                                     class="px-3 py-1.5 rounded-md border border-slate-300 dark:border-slate-600 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors">
                                     Siguiente
                                 </button>
@@ -414,10 +469,52 @@
             </div>
         </div>
     </div>
-    <script src="assets/js/utils.js"></script>
 
+    <!-- Modal de Vista Previa -->
+    <div id="preview-modal"
+        class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col">
+            <!-- Header del modal -->
+            <div class="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-white" id="preview-filename">Vista Previa</h3>
+                <div class="flex gap-2">
+                    <!-- Botón de descarga (solo para PDFs) -->
+                    <button id="download-pdf"
+                        class="p-1.5 text-slate-400 hover:text-primary dark:hover:text-blue-300 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700 hidden">
+                        <span class="material-symbols-outlined">download</span>
+                    </button>
+                    <!-- Botón de cerrar -->
+                    <button id="close-preview"
+                        class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
+                        <span class="material-symbols-outlined">close</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Contenido de la vista previa -->
+            <div class="flex-1 overflow-auto p-4" id="preview-content">
+                <div class="flex items-center justify-center h-full">
+                    <div class="text-center">
+                        <div class="animate-spin h-8 w-8 border-2 border-primary rounded-full mb-3"></div>
+                        <p class="text-slate-600 dark:text-slate-400">Cargando vista previa...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ Workaround para PDF.js 2.5.207 -->
+    <script>
+        // Forzar el contexto global que PDF.js espera
+        window.pdfjsLib = window.pdfjsLib || {};
+        window.pdfjsLib.PDFJS = window.pdfjsLib.PDFJS || {};
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.min.js"></script>
+    <script src="assets/js/utils.js"></script>
+    <script src="assets/js/filters.js"></script>
     <script src="assets/js/library.js"></script>
     <script>document.addEventListener('DOMContentLoaded', loadSidebar);</script>
+
 </body>
 
 </html>

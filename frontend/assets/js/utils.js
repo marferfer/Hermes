@@ -133,5 +133,10 @@ async function loadSidebar() {
 
 // Función de logout
 function logout() {
-  alert("Logout deshabilitado en modo desarrollo");
+  Swal.fire({
+      icon: "error",
+      title: "Oops...",
+      text: "Logout deshabilitado en modo desarrollo",
+      //footer: '<a href="#">Why do I have this issue?</a>'
+    });
 }

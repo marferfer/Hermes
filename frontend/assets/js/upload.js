@@ -7,10 +7,17 @@ const UploadState = {
     ERROR: 'error'
 };
 
+// Estado de los archivos seleccionados
+let selectedFiles = [];
+
+// Configuración por defecto
+const defaultConfig = {
+    department: "[1014] Sistemas",
+    visibility: "departamento"
+};
+
 function showUploadPanel() {
-    document
-        .getElementById('upload-status-panel')
-        .classList.remove('hidden');
+    document.getElementById('upload-status-panel').classList.remove('hidden');
 }
 
 function createStatusItem(fileName, state, message) {
@@ -72,12 +79,18 @@ function createStatusItem(fileName, state, message) {
     return div;
 }
 
-
-// Función para obtener el departamento del usuario (simulado)
+// Función para obtener el departamento del usuario
 function getUserDepartment() {
-    // En producción, esto vendría de localStorage o una API
-    // Por ahora, usamos un valor fijo para pruebas
-    return "[1014] Sistemas";
+    const user = JSON.parse(localStorage.getItem('hermes_user'));
+    const roles = user?.realm_access?.roles || [];
+    const validDepartments = ["[1014] Sistemas", "IT", "Finanzas", "RRHH", "Marketing", "Dirección"];
+    return roles.find(role => validDepartments.includes(role)) || "[1014] Sistemas";
+}
+
+// En upload.js
+function getUserDepartmentUser() {
+    const user = JSON.parse(localStorage.getItem('hermes_user'));
+    return user?.preferred_username || "unknown";
 }
 
 // Validar archivo
@@ -85,10 +98,10 @@ function validateFile(file) {
     const maxSize = 25 * 1024 * 1024; // 25MB
     const validTypes = [
         'application/pdf',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-        'text/plain', // .txt
-        'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // .xlsx
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'text/plain',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     ];
 
     if (file.size > maxSize) {
@@ -102,20 +115,49 @@ function validateFile(file) {
     return { valid: true };
 }
 
+// Obtener info del archivo
+function getFileInfo(file) {
+    const extension = file.name.split('.').pop().toLowerCase();
+    let format = extension.toUpperCase();
+    let icon = "description";
+    let iconColor = "blue";
+
+    if (extension === 'pdf') {
+        icon = "picture_as_pdf";
+        iconColor = "red";
+    } else if (['xlsx', 'xls'].includes(extension)) {
+        icon = "table_view";
+        iconColor = "green";
+        format = "Excel";
+    } else if (extension === 'docx') {
+        icon = "description";
+        iconColor = "blue";
+        format = "Word";
+    } else if (extension === 'pptx') {
+        icon = "slideshow";
+        iconColor = "orange";
+        format = "PowerPoint";
+    } else if (extension === 'txt') {
+        icon = "text_snippet";
+        iconColor = "purple";
+        format = "Texto";
+    }
+
+    return { extension, format, icon, iconColor };
+}
+
 // Simular cálculo de hash
 function calculateHash(file) {
     return new Promise((resolve) => {
-        // Simulación simple
         const hash = 'f6d8741d8e8ab7dc3b3e72754d2f0a60406d12c3a36cc872129043b1c86e1a3b';
         resolve(hash);
     });
 }
 
-
+// Subir archivo al servidor
 async function uploadFileToServer(file, meta) {
     const formData = new FormData();
     formData.append('files', file);
-    // Enviar metadata como array (aunque sea un solo archivo)
     formData.append('metadata', JSON.stringify([meta]));
 
     const response = await fetch('http://localhost:8000/api/documents/upload', {
@@ -124,119 +166,318 @@ async function uploadFileToServer(file, meta) {
     });
 
     if (!response.ok) {
-        const error = await response.json().catch(() => ({detail: "Error desconocido"}));
+        const error = await response.json().catch(() => ({ detail: "Error desconocido" }));
         throw new Error(error.detail || "Error en la subida");
     }
-    
+
     return await response.json();
 }
 
-// Procesar y subir archivos
-async function processFiles(files) {
-    const uploadArea = document.querySelector('.upload-area');
-    const uploadBtn = document.querySelector('.upload-btn');
-    const resultsDiv = document.getElementById('upload-results');
+// CREAR TABLA DE PREVISUALIZACIÓN
+function createPreviewTable() {
+    const container = document.getElementById('preview-table-container');
+    if (!container) return;
 
-    // Deshabilitar durante la subida
-    if (uploadBtn) {
-        uploadBtn.disabled = true;
-        uploadBtn.innerHTML = '<span class="animate-spin">↻</span> Subiendo...';
+    if (selectedFiles.length === 0) {
+        container.classList.add('hidden');
+        updateSubmitButton();
+        return;
     }
 
-    const successful = [];
-    const errors = [];
+    container.classList.remove('hidden');
 
-    for (const file of files) {
-        try {
-            const validation = validateFile(file);
-            if (!validation.valid) {
-                errors.push(`${file.name}: ${validation.error}`);
-                continue;
+    let tableHTML = `
+        <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+            <table class="w-full text-left border-collapse">
+                <thead class="bg-slate-50 dark:bg-slate-800/50">
+                    <tr>
+                        <th class="px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Archivo</th>
+                        <th class="px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Formato</th>
+                        <th class="px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Departamento</th>
+                        <th class="px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Visibilidad</th>
+                        <th class="px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Estado</th>
+                        <th class="px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+
+    // Fila de control masivo - SIN BOTÓN APLICAR
+    tableHTML += `
+    <tr class="bg-slate-100 dark:bg-slate-800/30 border-b border-slate-200 dark:border-slate-700">
+        <td class="px-4 py-2 text-sm font-semibold text-slate-700 dark:text-slate-300">
+            Aplicar a todos los documentos
+        </td>
+        <td class="px-4 py-3"></td>
+        <td class="px-4 py-2" colspan="2">
+            <div class="flex gap-2">
+                <select class="w-full h-10 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2" id="mass-department">
+                    <option value="">Seleccionar...</option>
+                    <option value="[1014] Sistemas">[1014] Sistemas</option>
+                    <option value="RRHH">Recursos Humanos</option>
+                    <option value="Finanzas">Finanzas</option>
+                    <option value="IT">Tecnología (TI)</option>
+                    <option value="Marketing">Marketing</option>
+                    <option value="Dirección">Dirección</option>
+                </select>
+                <select class="w-full h-10 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2" id="mass-visibility">
+                    <option value="">Seleccionar...</option>
+                    <option value="departamento">Solo mi departamento</option>
+                    <option value="publico">Público</option>
+                    <option value="privado">Privado</option>
+                </select>
+            </div>
+        </td>
+        <td class="px-4 py-2"></td>
+        <td class="px-4 py-2 text-center">
+            <button id="remove-all-files" class="p-1.5 text-slate-400 hover:text-red-600 transition-colors">
+                <span class="material-symbols-outlined text-[18px]">delete</span>
+            </button>
+        </td>
+    </tr>
+`;
+
+    // Filas de archivos
+    selectedFiles.forEach((file, index) => {
+        const fileInfo = getFileInfo(file);
+        tableHTML += `
+            <tr class="hover:bg-slate-50 dark:hover:bg-slate-800/30" data-index="${index}">
+                <td class="px-4 py-3">
+                    <div class="flex items-center gap-3">
+                        <div class="h-8 w-8 rounded-lg bg-${fileInfo.iconColor}-50 text-${fileInfo.iconColor}-600 flex items-center justify-center">
+                            <span class="material-symbols-outlined text-[16px]">${fileInfo.icon}</span>
+                        </div>
+                        <span class="text-sm font-medium text-slate-900 dark:text-white">${file.name}</span>
+                    </div>
+                </td>
+                
+                <td class="px-4 py-3">
+                    <span class="text-sm text-slate-600 dark:text-slate-400">${fileInfo.format}</span>
+                </td>
+                <td class="px-4 py-3">
+                    <select class="w-full h-10 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 file-dept" data-index="${index}">
+                        <option value="">Seleccionar...</option>
+                        <option value="[1014] Sistemas">[1014] Sistemas</option>
+                        <option value="RRHH">Recursos Humanos</option>
+                        <option value="Finanzas">Finanzas</option>
+                        <option value="IT">Tecnología (TI)</option>
+                        <option value="Marketing">Marketing</option>
+                        <option value="Dirección">Dirección</option>
+                    </select>
+                </td>
+                <td class="px-4 py-3">
+                    <select class="w-full h-10 text-sm rounded border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 file-visibility" data-index="${index}">
+                        <option value="departamento">Solo mi departamento</option>
+                        <option value="publico">Público</option>
+                        <option value="privado">Privado</option>
+                    </select>
+                </td>
+                <td class="px-4 py-3">
+                    <div class="text-sm text-slate-500 dark:text-slate-400" id="status-${index}">Pendiente</div>
+                </td>
+                <td class="px-4 py-3 text-center">
+                    <button class="p-1.5 text-slate-400 hover:text-red-600 transition-colors remove-file-btn" data-index="${index}">
+                        <span class="material-symbols-outlined text-[18px]">delete</span>
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+
+    tableHTML += '</tbody></table></div>';
+    container.innerHTML = tableHTML;
+
+    // Añadir eventos
+    const applyBtn = document.getElementById('apply-mass-config');
+    const removeAllBtn = document.getElementById('remove-all-files');
+    const removeBtns = document.querySelectorAll('.remove-file-btn');
+
+    // Eventos de eliminación
+    if (removeAllBtn) {
+        removeAllBtn.addEventListener('click', () => {
+            if (confirm('¿Estás seguro de que quieres eliminar todos los documentos?')) {
+                removeAllFiles();
             }
-
-            const department = getUserDepartment();
-            const contentHash = await calculateHash(file);
-
-            const meta = {
-                access_level: "departamento",
-                owner_department: department,
-                content_hash: contentHash
-            };
-
-            const success = await uploadFileToServer(file, meta);
-            if (success) {
-                successful.push(file.name);
-            } else {
-                errors.push(`${file.name}: Error en la subida`);
+        });
+    }
+    removeBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const index = parseInt(e.currentTarget.dataset.index);
+            if (confirm('¿Estás seguro de que quieres eliminar este documento?')) {
+                removeFile(index);
             }
+        });
+    });
 
-        } catch (error) {
-            console.error('Error procesando archivo:', file.name, error);
-            errors.push(`${file.name}: Error de procesamiento`);
-        }
+    // Eventos automáticos para dropdowns masivos
+    const massDeptSelect = document.getElementById('mass-department');
+    const massVisSelect = document.getElementById('mass-visibility');
+
+    if (massDeptSelect) {
+        massDeptSelect.addEventListener('change', (e) => {
+            const value = e.target.value;
+            document.querySelectorAll('.file-dept').forEach(select => {
+                select.value = value;
+            });
+        });
     }
 
-
-    // Mostrar resultados
-    if (resultsDiv) {
-        let html = '<div class="mt-4 p-3 rounded">';
-
-        if (successful.length > 0) {
-            html += `<div class="text-green-600 mb-2">
-                ✅ ${successful.length} archivo(s) procesado(s) correctamente
-            </div>`;
-        }
-
-        if (errors.length > 0) {
-            html += `<div class="text-red-600">
-                ❌ Errores: ${errors.join(', ')}
-            </div>`;
-        }
-
-        html += '</div>';
-        resultsDiv.innerHTML = html;
-
-        // Limpiar resultados después de 5 segundos
-        if (errors.length === 0) {
-            setTimeout(() => {
-                resultsDiv.innerHTML = '';
-            }, 5000);
-        }
+    if (massVisSelect) {
+        massVisSelect.addEventListener('change', (e) => {
+            const value = e.target.value;
+            document.querySelectorAll('.file-visibility').forEach(select => {
+                select.value = value;
+            });
+        });
     }
 
-    // Restaurar botón
-    if (uploadBtn) {
-        uploadBtn.disabled = false;
-        uploadBtn.innerHTML = 'Subir Archivos';
+    updateSubmitButton();
+}
+
+//////////////////////FUNCION QUE APLICA BORRADO COMPLETO///////////////
+// function applyMassConfiguration() {
+//     const massDept = document.getElementById('mass-department')?.value;
+//     const massVis = document.getElementById('mass-visibility')?.value;
+
+//     // Si ambos están vacíos, resetear todos
+//     if (massDept === '' && massVis === '') {
+//         selectedFiles.forEach((_, index) => {
+//             const deptSelect = document.querySelector(`select.file-dept[data-index="${index}"]`);
+//             const visSelect = document.querySelector(`select.file-visibility[data-index="${index}"]`);
+
+//             if (deptSelect) deptSelect.value = '';
+//             if (visSelect) visSelect.value = '';
+//         });
+//         return;
+//     }
+
+//     // Aplicar valores seleccionados
+//     selectedFiles.forEach((_, index) => {
+//         const deptSelect = document.querySelector(`select.file-dept[data-index="${index}"]`);
+//         const visSelect = document.querySelector(`select.file-visibility[data-index="${index}"]`);
+
+//         if (massDept !== undefined && deptSelect) deptSelect.value = massDept;
+//         if (massVis !== undefined && visSelect) visSelect.value = massVis;
+//     });
+// }
+
+function updateSubmitButton() {
+    const submitBtn = document.getElementById('upload-submit-btn');
+    if (submitBtn) {
+        submitBtn.disabled = selectedFiles.length === 0;
     }
 }
 
-// Inicializar drag & drop
+// SUBIR ARCHIVOS
+async function uploadSelectedFiles() {
+    const deptSelects = document.querySelectorAll('.file-dept');
+    const visSelects = document.querySelectorAll('.file-visibility');
+
+    // Validar configuración
+    let hasErrors = false;
+    selectedFiles.forEach((_, index) => {
+        const dept = deptSelects[index]?.value;
+        const vis = visSelects[index]?.value;
+        const statusEl = document.getElementById(`status-${index}`);
+
+        if (!dept || !vis) {
+            if (statusEl) statusEl.innerHTML = '<span class="text-red-600">Configurar</span>';
+            hasErrors = true;
+        }
+    });
+
+    if (hasErrors) {
+        showResults('Configura todos los documentos antes de subir', 'error');
+        return;
+    }
+
+    // Subir cada archivo
+    for (let i = 0; i < selectedFiles.length; i++) {
+        const file = selectedFiles[i];
+        const dept = deptSelects[i].value;
+        const vis = visSelects[i].value;
+
+        const statusEl = document.getElementById(`status-${i}`);
+        if (statusEl) statusEl.innerHTML = '<span class="text-amber-600">Subiendo...</span>';
+
+        try {
+            const contentHash = await calculateHash(file);
+            const meta = {
+                access_level: vis,
+                owner_department: dept,
+                owner_user: getUserDepartmentUser(), // ← NUEVA FUNCIÓN
+                content_hash: contentHash,
+                upload_date: new Date().toISOString(),
+                mime_type: file.type,
+                original_filename: file.name
+            };
+
+            await uploadFileToServer(file, meta);
+
+            if (statusEl) statusEl.innerHTML = '<span class="text-green-600">✓ Subido</span>';
+        } catch (error) {
+            if (statusEl) statusEl.innerHTML = '<span class="text-red-600">✗ Error</span>';
+            console.error('Error subiendo archivo:', error);
+        }
+    }
+
+    // Mostrar resumen
+    const successCount = Array.from(document.querySelectorAll('[id^="status-"]'))
+        .filter(el => el.innerHTML.includes('✓')).length;
+
+    showResults(`${successCount} de ${selectedFiles.length} archivos subidos`, 'success');
+}
+
+function showResults(message, type = 'success') {
+    const resultsDiv = document.getElementById('upload-results');
+    if (resultsDiv) {
+        resultsDiv.innerHTML = `<div class="mt-4 p-3 rounded ${type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+            }">${message}</div>`;
+        setTimeout(() => resultsDiv.innerHTML = '', 5000);
+    }
+}
+
+// AÑADIR ARCHIVOS
+function addFiles(newFiles) {
+    const validFiles = newFiles.filter(file => {
+        const validation = validateFile(file);
+        if (!validation.valid) {
+            showResults(`${file.name}: ${validation.error}`, 'error');
+        }
+        return validation.valid;
+    });
+
+    if (validFiles.length === 0) return;
+
+    selectedFiles.push(...validFiles);
+    createPreviewTable();
+}
+
+// INICIALIZAR
 function initUpload() {
     const uploadArea = document.querySelector('.upload-area');
     const fileInput = document.querySelector('.file-input');
+    const submitBtn = document.getElementById('upload-submit-btn');
 
     if (!uploadArea || !fileInput) return;
 
-    // Drag over
+    // Drag & drop
     uploadArea.addEventListener('dragover', (e) => {
         e.preventDefault();
         uploadArea.classList.add('border-blue-500', 'bg-blue-50');
     });
 
-    // Drag leave
     uploadArea.addEventListener('dragleave', (e) => {
         e.preventDefault();
         uploadArea.classList.remove('border-blue-500', 'bg-blue-50');
     });
 
-    // Drop
     uploadArea.addEventListener('drop', (e) => {
         e.preventDefault();
         uploadArea.classList.remove('border-blue-500', 'bg-blue-50');
         const files = e.dataTransfer.files;
         if (files.length > 0) {
-            processFiles(Array.from(files));
+            addFiles(Array.from(files));
         }
     });
 
@@ -249,11 +490,32 @@ function initUpload() {
     fileInput.addEventListener('change', (e) => {
         const files = e.target.files;
         if (files.length > 0) {
-            processFiles(Array.from(files));
+            addFiles(Array.from(files));
         }
     });
+
+    // Submit button
+    if (submitBtn) {
+        submitBtn.addEventListener('click', uploadSelectedFiles);
+    }
+
+    // Inicializar tabla vacía
+    createPreviewTable();
+}
+
+// Eliminar un archivo específico
+function removeFile(index) {
+    if (index >= 0 && index < selectedFiles.length) {
+        selectedFiles.splice(index, 1);
+        createPreviewTable();
+    }
+}
+
+// Eliminar todos los archivos
+function removeAllFiles() {
+    selectedFiles = [];
+    createPreviewTable();
 }
 
 // Iniciar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', initUpload);
-

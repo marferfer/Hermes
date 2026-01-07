@@ -50,7 +50,13 @@ async function exchangeCodeForTokens(code) {
 
     } catch (error) {
         console.error('❌ Error al obtener tokens:', error);
-        alert('❌ Error de autenticación. Por favor, contacta con soporte.');
+        //alert('❌ Error de autenticación. Por favor, contacta con soporte.');
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "❌ Error de autenticación. Por favor, contacta con soporte.",
+          //footer: '<a href="#">Why do I have this issue?</a>'
+        });
         return null;
     }
 }
@@ -91,7 +97,13 @@ function saveTokens(tokens) {
         console.error("❌ Error al guardar sesión:", e);
         localStorage.removeItem('hermes_tokens');
         localStorage.removeItem('hermes_user');
-        alert("Error al procesar la autenticación. Por favor, inténtalo de nuevo.");
+        //alert("Error al procesar la autenticación. Por favor, inténtalo de nuevo.");
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: "❌ Error al procesar la autenticación. Por favor, inténtalo de nuevo.",
+          //footer: '<a href="#">Why do I have this issue?</a>'
+        });
     }
 }
 

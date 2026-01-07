@@ -1,5 +1,6 @@
 # backend/app.py
 from fastapi import FastAPI, Request, File, UploadFile, Form, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 import requests
 import os
@@ -187,3 +188,42 @@ async def upload_documents(
         raise HTTPException(status_code=400, detail="Metadata no es JSON válido")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al subir archivos: {str(e)}")
+    
+
+
+@app.get("/api/documents/{filename}/download")
+async def download_document(filename: str):
+    """
+    Descarga un documento directamente como archivo, no como zip.
+    """
+    # 1. Validación de seguridad: evitar directory traversal
+    if ".." in filename or filename.startswith("/") or filename.startswith("\\"):
+        raise HTTPException(status_code=400, detail="Nombre de archivo inválido")
+    
+    # 2. Ruta al archivo
+    file_path = DOCS_DIR / filename
+    
+    # 3. Verificar que existe
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Documento no encontrado")
+    
+    # 4. Obtener el tipo MIME correcto
+    mime_types = {
+        '.pdf': 'application/pdf',
+        '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        '.txt': 'text/plain',
+        '.doc': 'application/msword',
+        '.xls': 'application/vnd.ms-excel',
+        '.ppt': 'application/vnd.ms-powerpoint'
+    }
+    extension = Path(filename).suffix.lower()
+    media_type = mime_types.get(extension, 'application/octet-stream')
+    
+    # 5. Devolver el archivo con headers correctos
+    return FileResponse(
+        path=file_path,
+        media_type=media_type,
+        filename=filename  # Esto fuerza el nombre de descarga
+    )

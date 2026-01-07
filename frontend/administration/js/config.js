@@ -185,5 +185,11 @@ document.addEventListener('DOMContentLoaded', updateServerStatusToggle);
 // El toggle es solo informativo, no permite cambiar el estado manualmente
 document.getElementById('server-toggle')?.addEventListener('click', (e) => {
     e.preventDefault();
-    alert('Este toggle es solo informativo. Para iniciar el servidor, ejecuta "node server.js" en la terminal.');
+    Swal.fire({
+      icon: "error",
+      title: "Oops...",
+      text: "Este toggle es solo informativo. Para iniciar el servidor, ejecuta 'node server.js' en la terminal.",
+      //footer: '<a href="#">Why do I have this issue?</a>'
+    });
+    //alert('Este toggle es solo informativo. Para iniciar el servidor, ejecuta "node server.js" en la terminal.');
 });

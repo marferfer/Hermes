@@ -1,5 +1,4 @@
 // frontend/assets/js/library.js
-
 // Función para obtener documentos del backend
 async function fetchDocuments() {
     try {
@@ -96,6 +95,17 @@ function createDocumentRow(doc) {
         accessText = "Privado";
     }
     
+    // Verificar si el usuario actual es el propietario
+    const currentUser = getCurrentUsername();
+    const isOwner = doc.owner_user === currentUser;
+    
+    // Botón de eliminar (solo si es propietario)
+    const deleteButton = isOwner ? 
+        `<button class="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all delete-btn" data-filename="${doc.filename}" title="Eliminar archivo">
+            <span class="material-symbols-outlined text-[20px]">delete</span>
+        </button>` : 
+        `<span class="text-slate-300 dark:text-slate-600" title="Solo el propietario puede eliminar">—</span>`;
+
     return `
         <tr class="group hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors">
             <td class="px-6 py-4">
@@ -104,7 +114,7 @@ function createDocumentRow(doc) {
                         <span class="material-symbols-outlined">${icon}</span>
                     </div>
                     <div class="flex flex-col">
-                        <span class="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-primary transition-colors cursor-pointer">${doc.filename}</span>
+                        <span class="text-sm font-semibold text-slate-900 dark:text-white group-hover:text-primary transition-colors cursor-pointer" onclick="showDocumentPreview('${doc.filename}')">${doc.filename}</span>
                         <span class="text-xs text-slate-500">${formatDate(doc.upload_date)}</span>
                     </div>
                 </div>
@@ -124,66 +134,31 @@ function createDocumentRow(doc) {
                 ${doc.file_size ? (doc.file_size / 1024).toFixed(0) : '0'} KB
             </td>
             <td class="px-6 py-4 text-center">
-                <button class="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all delete-btn" data-filename="${doc.filename}" title="Eliminar archivo">
-                    <span class="material-symbols-outlined text-[20px]">delete</span>
-                </button>
+                ${deleteButton}
             </td>
         </tr>
     `;
 }
 
+// Obtener username actual
+function getCurrentUsername() {
+    const user = JSON.parse(localStorage.getItem('hermes_user'));
+    return user?.preferred_username || "unknown";
+}
+
 // Renderiza la tabla de documentos
+
 async function renderDocuments() {
     const tableBody = document.querySelector('tbody');
-    const counter = document.querySelector('.text-sm.text-slate-500.font-medium');
     
     try {
         const allDocuments = await fetchDocuments();
         
-        // 👇 IMPRIMIR TODOS LOS DOCUMENTOS EN CONSOLA
-        console.table(allDocuments); // Tabla legible
-        console.log('📄 Todos los documentos:', allDocuments);
-        
-        const userDept = getUserDepartment();
-        console.log('👤 Departamento del usuario:', userDept);
-        
-        const accessibleDocs = allDocuments; // ← Esto muestra TODOS los documentos
-        console.log('✅ Documentos accesibles:', accessibleDocs);
-        console.log('❌ Documentos NO accesibles:', allDocuments.filter(doc => !isDocumentAccessible(doc)));
-        
-        const totalCount = allDocuments.length;
-        const visibleCount = accessibleDocs.length;
-        
-       // ✅ Contador actualizado
-        counter.innerHTML = `<span class="text-slate-900 dark:text-white font-bold">${allDocuments.length}</span> documentos disponibles`;
-
-        // Renderizar filas (solo accesibles)
-        if (visibleCount === 0) {
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="5" class="px-6 py-12 text-center">
-                        <div class="flex flex-col items-center justify-center">
-                            <div class="h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
-                                <span class="material-symbols-outlined text-3xl text-slate-400">folder_off</span>
-                            </div>
-                            <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-1">No tienes acceso a ningún documento</h3>
-                            <p class="text-slate-500 dark:text-slate-400 text-sm max-w-md">
-                                Contacta con tu departamento para solicitar acceso a los documentos necesarios.
-                            </p>
-                        </div>
-                    </td>
-                </tr>
-            `;
+        if (window.DocumentFilters && typeof window.DocumentFilters.setDocuments === 'function') {
+            window.DocumentFilters.setDocuments(allDocuments);
         } else {
-            tableBody.innerHTML = accessibleDocs.map(createDocumentRow).join('');
-            
-            // Añadir eventos a los botones de eliminar
-            document.querySelectorAll('.delete-btn').forEach(button => {
-                button.addEventListener('click', (e) => {
-                    const filename = e.currentTarget.dataset.filename;
-                    showDeleteConfirmation(filename);
-                });
-            });
+            // Fallback sin paginación
+            renderDocumentTable(allDocuments, tableBody);
         }
     } catch (error) {
         console.error('Error al cargar documentos:', error);
@@ -194,6 +169,37 @@ async function renderDocuments() {
                 </td>
             </tr>
         `;
+    }
+}
+
+// Función separada para renderizar la tabla
+function renderDocumentTable(documents, tableBody) {
+    if (documents.length === 0) {
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="5" class="px-6 py-12 text-center">
+                    <div class="flex flex-col items-center justify-center">
+                        <div class="h-12 w-12 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-3">
+                            <span class="material-symbols-outlined text-3xl text-slate-400">folder_off</span>
+                        </div>
+                        <h3 class="text-lg font-semibold text-slate-900 dark:text-white mb-1">No se encontraron documentos</h3>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm max-w-md">
+                            Ajusta tus filtros para encontrar los documentos que necesitas.
+                        </p>
+                    </div>
+                </td>
+            </tr>
+        `;
+    } else {
+        tableBody.innerHTML = documents.map(createDocumentRow).join('');
+        
+        // Añadir eventos a los botones de eliminar
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const filename = e.currentTarget.dataset.filename;
+                showDeleteConfirmation(filename);
+            });
+        });
     }
 }
 
@@ -229,13 +235,308 @@ function showDeleteConfirmation(filename) {
             }
         } catch (error) {
             console.error('Error al eliminar:', error);
-            alert('Error al eliminar el documento');
+            //alert('Error al eliminar el documento');
+            Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "❌ Error al eliminar el documento",
+                //footer: '<a href="#">Why do I have this issue?</a>'
+            });
         }
     };
 }
 
+// Mostrar vista previa de documento
+// Cargar PDF.js dinámicamente
+// async function loadPdfJs() {
+//     return new Promise((resolve, reject) => {
+//         if (typeof pdfjsLib !== 'undefined') {
+//             resolve();
+//             return;
+//         }
+        
+//         const script = document.createElement('script');
+//         // ✅ URL CORRECTA
+//         script.src = '//mozilla.github.io/pdf.js/build/pdf.mjs';
+//         script.async = true;
+        
+//         script.onload = () => {
+//             if (typeof pdfjsLib !== 'undefined') {
+//                 resolve();
+//             } else {
+//                 reject(new Error('PDF.js cargado pero no disponible'));
+//             }
+//         };
+        
+//         script.onerror = () => {
+//             reject(new Error('Error al cargar PDF.js desde CDN'));
+//         };
+        
+//         document.head.appendChild(script);
+//     });
+// }
+
+// Mostrar/ocultar botón de descarga según el tipo de archivo
+function toggleDownloadButton(filename, show = false) {
+    const downloadBtn = document.getElementById('download-pdf');
+    if (!downloadBtn) return;
+    
+    if (show) {
+        downloadBtn.classList.remove('hidden');
+        downloadBtn.onclick = () => {
+            window.open(`http://localhost:8000/api/documents/${encodeURIComponent(filename)}/download`, '_blank');
+        };
+    } else {
+        downloadBtn.classList.add('hidden');
+    }
+}
+
+
+// Mostrar vista previa de documento
+async function showDocumentPreview(filename) {
+    const modal = document.getElementById('preview-modal');
+    const previewContent = document.getElementById('preview-content');
+    const previewFilename = document.getElementById('preview-filename');
+    
+    previewFilename.textContent = filename;
+    modal.classList.remove('hidden');
+    
+    // Ocultar botón de descarga por defecto
+    toggleDownloadButton(filename, false);
+    
+    try {
+        const extension = filename.split('.').pop().toLowerCase();
+        
+        if (extension === 'pdf') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.worker.min.js';
+            await previewPDF(filename, previewContent);
+            // El botón se muestra dentro de previewPDF()
+        } else if (['txt'].includes(extension)) {
+            await previewText(filename, previewContent);
+            // ✅ Mostrar botón para TXT
+            toggleDownloadButton(filename, true);
+        } 
+        // Documentos de Office - mensaje informativo
+        else if (['docx', 'doc', 'xlsx', 'xls', 'pptx', 'ppt'].includes(extension)) {
+            const formatName = getFormatName(extension);
+            previewContent.innerHTML = `
+                <div class="flex items-center justify-center h-full">
+                    <div class="text-center max-w-md p-6">
+                        <div class="bg-blue-100 dark:bg-blue-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-3xl">description</span>
+                        </div>
+                        <h4 class="text-lg font-semibold text-slate-900 dark:text-white mb-2">${formatName}</h4>
+                        <p class="text-slate-600 dark:text-slate-400 mb-4">
+                            La vista previa no está disponible para este tipo de archivo.
+                        </p>
+                        <a href="http://localhost:8000/api/documents/${encodeURIComponent(filename)}/download" 
+                           class="inline-flex items-center gap-2 bg-primary hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                            <span class="material-symbols-outlined">download</span>
+                            Descargar archivo
+                        </a>
+                    </div>
+                </div>
+            `;
+            // Ocultar botón (ya está oculto por defecto)
+        } else {
+            previewContent.innerHTML = `
+                <div class="flex items-center justify-center h-full">
+                    <p class="text-slate-500 dark:text-slate-400">Vista previa no disponible para este formato</p>
+                </div>
+            `;
+            // Ocultar botón (ya está oculto por defecto)
+        }
+    } catch (error) {
+        console.error('Error en vista previa:', error);
+        previewContent.innerHTML = `
+            <div class="flex items-center justify-center h-full">
+                <div class="text-center">
+                    <div class="bg-red-100 dark:bg-red-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <span class="material-symbols-outlined text-red-600 dark:text-red-400 text-3xl">error</span>
+                    </div>
+                    <p class="text-red-600 dark:text-red-400">Error: ${error.message || 'No se pudo cargar la vista previa'}</p>
+                </div>
+            </div>
+        `;
+        toggleDownloadButton(filename, false);
+    }
+}
+
+// Función auxiliar para nombre del formato
+function getFormatName(extension) {
+    const names = {
+        'docx': 'Documento Word',
+        'doc': 'Documento Word',
+        'xlsx': 'Hoja de cálculo Excel',
+        'xls': 'Hoja de cálculo Excel',
+        'pptx': 'Presentación PowerPoint',
+        'ppt': 'Presentación PowerPoint'
+    };
+    return names[extension] || 'Documento';
+}
+
+// Vista previa de PDF - versión adaptada del ejemplo oficial
+async function previewPDF(filename, container) {
+    try {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.worker.min.js';
+        
+        container.innerHTML = '<div class="flex items-center justify-center h-full"><div class="text-center"><div class="animate-spin h-8 w-8 border-2 border-primary rounded-full mb-3"></div><p class="text-slate-600 dark:text-slate-400">Cargando PDF...</p></div></div>';
+        
+        const pdfUrl = `http://localhost:8000/api/documents/${filename}/download`;
+        const pdf = await pdfjsLib.getDocument({ url: pdfUrl }).promise;
+        const totalPages = pdf.numPages;
+        
+        const pagesContainer = document.createElement('div');
+        pagesContainer.className = 'flex flex-col items-center gap-6';
+        
+        for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+            const page = await pdf.getPage(pageNum);
+            const scale = 1.2;
+            const viewport = page.getViewport({ scale: scale });
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+            
+            await page.render({
+                canvasContext: context,
+                viewport: viewport
+            }).promise;
+            
+            const pageContainer = document.createElement('div');
+            pageContainer.className = 'flex flex-col items-center';
+            pageContainer.innerHTML = `<div class="text-sm text-slate-500 dark:text-slate-400 mb-2">Página ${pageNum} de ${totalPages}</div>`;
+            pageContainer.appendChild(canvas);
+            pagesContainer.appendChild(pageContainer);
+        }
+        
+        if (totalPages > 1) {
+            const pageInfo = document.createElement('div');
+            pageInfo.className = 'text-center mt-4 text-slate-600 dark:text-slate-400 text-sm';
+            pageInfo.textContent = `${totalPages} páginas en total`;
+            pagesContainer.appendChild(pageInfo);
+        }
+        
+        container.innerHTML = '';
+        container.appendChild(pagesContainer);
+        
+        // ✅ AÑADIDO: Mostrar botón de descarga
+        const downloadBtn = document.getElementById('download-pdf');
+        if (downloadBtn) {
+            downloadBtn.classList.remove('hidden');
+            downloadBtn.onclick = () => {
+                window.open(`http://localhost:8000/api/documents/${encodeURIComponent(filename)}/download`, '_blank');
+            };
+        }
+        
+    } catch (error) {
+        console.error('Error en PDF:', error);
+        container.innerHTML = `
+            <div class="flex items-center justify-center h-full">
+                <div class="text-center p-4">
+                    <div class="bg-red-100 dark:bg-red-900/30 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <span class="material-symbols-outlined text-red-600 dark:text-red-400 text-2xl">error</span>
+                    </div>
+                    <p class="text-red-600 dark:text-red-400 text-sm">Error al cargar PDF</p>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">${error.message}</p>
+                </div>
+            </div>
+        `;
+        
+        // Ocultar botón de descarga en caso de error
+        const downloadBtn = document.getElementById('download-pdf');
+        if (downloadBtn) {
+            downloadBtn.classList.add('hidden');
+        }
+    }
+}
+
+// // Vista previa de documentos de Office usando Google Docs Viewer
+// async function previewOfficeDocument(filename, container) {
+//     try {
+//         // URL del documento en tu backend
+//         const documentUrl = `http://localhost:8000/api/documents/${filename}/download`;
+        
+//         // Google Docs Viewer URL
+//         const googleViewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(documentUrl)}&embedded=true`;
+        
+//         container.innerHTML = `
+//             <div class="h-full w-full flex flex-col">
+//                 <div class="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-600">
+//                     <span class="text-sm font-medium text-slate-700 dark:text-slate-300">Vista previa de documento</span>
+//                     <a href="${documentUrl}" target="_blank" class="text-xs text-primary hover:underline">
+//                         Abrir en nueva pestaña
+//                     </a>
+//                 </div>
+//                 <div class="flex-1 overflow-hidden">
+//                     <iframe 
+//                         src="${googleViewerUrl}" 
+//                         class="w-full h-full border-0"
+//                         style="min-height: 500px;"
+//                         frameborder="0">
+//                     </iframe>
+//                 </div>
+//                 <div class="text-xs text-slate-500 dark:text-slate-400 p-2 text-center">
+//                     Vista previa proporcionada por Google Docs Viewer
+//                 </div>
+//             </div>
+//         `;
+        
+//     } catch (error) {
+//         console.error('Error en vista previa de Office:', error);
+//         container.innerHTML = `
+//             <div class="flex items-center justify-center h-full">
+//                 <div class="text-center max-w-md p-6">
+//                     <div class="bg-blue-100 dark:bg-blue-900/30 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+//                         <span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-3xl">description</span>
+//                     </div>
+//                     <h4 class="text-lg font-semibold text-slate-900 dark:text-white mb-2">Vista previa no disponible</h4>
+//                     <p class="text-slate-600 dark:text-slate-400 mb-4">
+//                         No se pudo cargar la vista previa del documento. 
+//                         Intenta abrirlo directamente.
+//                     </p>
+//                     <a href="http://localhost:8000/api/documents/${encodeURIComponent(filename)}/download"  
+//                        target="_blank"
+//                        class="inline-flex items-center gap-2 bg-primary hover:bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+//                         <span class="material-symbols-outlined">download</span>
+//                         Descargar archivo
+//                     </a>
+//                 </div>
+//             </div>
+//         `;
+//     }
+// }
+
+
+
+// Vista previa de texto
+async function previewText(filename, container) {
+    try {
+        const response = await fetch(`http://localhost:8000/api/documents/${encodeURIComponent(filename)}/download`);
+        const text = await response.text();
+        
+        container.innerHTML = `
+            <div class="h-full overflow-auto">
+                <pre class="whitespace-pre-wrap font-mono text-sm text-slate-700 dark:text-slate-300 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg">
+${text}
+                </pre>
+            </div>
+        `;
+    } catch (error) {
+        throw new Error('Error al cargar texto');
+    }
+}
+
+// Cerrar modal
+function closePreviewModal() {
+    document.getElementById('preview-modal').classList.add('hidden');
+}
+
 // Inicializa la biblioteca
 document.addEventListener('DOMContentLoaded', async () => {
+    const closeBtn = document.getElementById('close-preview');
+    const modal = document.getElementById('preview-modal');
+
     await loadSidebar();
     renderDocuments();
     
@@ -243,5 +544,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     const searchInput = document.querySelector('input[placeholder="Buscar por nombre..."]');
     if (searchInput) {
         searchInput.addEventListener('input', renderDocuments);
+    }
+
+    //Gestión del modal de vista previa
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closePreviewModal);
+    }
+    
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                closePreviewModal();
+            }
+        });
     }
 });

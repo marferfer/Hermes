@@ -20,6 +20,7 @@
         rel="stylesheet" />
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Theme Configuration -->
     <script id="tailwind-config">
         tailwind.config = {
@@ -100,57 +101,74 @@
             class="h-auto min-h-[80px] px-8 py-6 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-[#1A202C] border-b border-slate-200 dark:border-slate-800 shrink-0">
             <div>
                 <h1 class="text-2xl font-bold text-slate-900 dark:text-white tracking-tight">Subir Documentos</h1>
-                <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Almacenamiento de documentación inteligente</p>
+                <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Almacenamiento de documentación inteligente
+                </p>
             </div>
         </header>
         <!-- Scrollable Content -->
         <div class="flex-1 overflow-y-auto p-8 scroll-smooth">
-            <div class="max-w-4xl mx-auto space-y-6">
+            <div class="max-w-7xl mx-auto space-y-6">
                 <!-- Main Form Card -->
                 <div
                     class="bg-surface-light dark:bg-surface-dark rounded-xl shadow-sm border border-border-light dark:border-border-dark overflow-hidden">
                     <div class="p-6 md:p-8 space-y-8">
                         <!-- Select Inputs Section -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Header con botón de subida -->
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 class="text-xl font-bold text-slate-900 dark:text-white">Subir Documentos</h2>
+                                <p class="text-slate-500 dark:text-slate-400 text-sm">Gestiona múltiples archivos con
+                                    configuración avanzada</p>
+                            </div>
+                            <button id="upload-submit-btn" disabled
+                                class="flex items-center gap-2 bg-primary hover:bg-blue-600 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-all shadow-md shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed">
+                                <span class="material-symbols-outlined text-[18px]">cloud_upload</span>
+                                <span>Subir Documentos</span>
+                            </button>
+                        </div>
+
+                        <!-- Formulario de configuración por defecto -->
+                        <!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6"> -->
                             <!-- Department Select -->
-                            <div class="space-y-2">
+                            <!-- <div class="space-y-2">
                                 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200"
-                                    for="department">
+                                    for="default-department">
                                     Departamento Propietario <span class="text-red-500">*</span>
                                 </label>
                                 <div class="relative">
                                     <select
-                                        class="w-full h-12 pl-4 pr-10 rounded-lg border-border-light dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-shadow appearance-none cursor-pointer"
-                                        id="department">
-                                        <option disabled="" selected="" value="">Seleccionar departamento...</option>
-                                        <option value="hr">Recursos Humanos</option>
-                                        <option value="it">Tecnología (TI)</option>
-                                        <option value="finance">Finanzas</option>
-                                        <option value="sales">Ventas</option>
-                                        <option value="legal">Legal</option>
-                                        <option value="ops">Operaciones</option>
+                                        class="w-full h-12 pl-4 pr-10 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-shadow appearance-none cursor-pointer"
+                                        id="default-department">
+                                        <option value="">Seleccionar departamento...</option>
+                                        <option value="[1014] Sistemas">[1014] Sistemas</option>
+                                        <option value="RRHH">Recursos Humanos</option>
+                                        <option value="Finanzas">Finanzas</option>
+                                        <option value="IT">Tecnología (TI)</option>
+                                        <option value="Marketing">Marketing</option>
+                                        <option value="Dirección">Dirección</option>
                                     </select>
                                 </div>
-                            </div>
+                            </div> -->
                             <!-- Visibility Select -->
-                            <div class="space-y-2">
+                            <!-- <div class="space-y-2">
                                 <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200"
-                                    for="visibility">
-                                    Visibilidad <span class="text-red-500">*</span>
+                                    for="default-visibility">
+                                    Visibilidad por Defecto <span class="text-red-500">*</span>
                                 </label>
                                 <div class="relative">
                                     <select
-                                        class="w-full h-12 pl-4 pr-10 rounded-lg border-border-light dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-shadow appearance-none cursor-pointer"
-                                        id="visibility">
-                                        <option value="dept">Solo mi departamento</option>
-                                        <option value="public">Público (Toda la empresa)</option>
-                                        <option value="private">Privado</option>
+                                        class="w-full h-12 pl-4 pr-10 rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary transition-shadow appearance-none cursor-pointer"
+                                        id="default-visibility">
+                                        <option value="departamento">Solo mi departamento</option>
+                                        <option value="publico">Público (Toda la empresa)</option>
+                                        <option value="privado">Privado</option>
                                     </select>
                                 </div>
-                            </div>
-                        </div>
+                            </div> -->
+                        <!-- </div> -->
+
                         <!-- Drag and Drop Zone -->
-                        <div class="space-y-2">
+                        <div class="space-y-2 mb-6">
                             <label class="block text-sm font-semibold text-slate-700 dark:text-slate-200">
                                 Adjuntar Archivos
                             </label>
@@ -159,7 +177,7 @@
                                 <div class="flex flex-col items-center justify-center pt-5 pb-6 text-center px-4">
                                     <div
                                         class="size-16 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                        <span class="text-3xl">📁</span>
+                                        <span class="material-symbols-outlined text-[32px]">cloud_upload</span>
                                     </div>
                                     <p class="mb-2 text-lg font-semibold text-slate-700 dark:text-white">
                                         Arrastra y suelta tus archivos aquí
@@ -176,13 +194,35 @@
                             </div>
                             <div id="upload-results"></div>
                         </div>
-                        <!-- Upload Queue / Status Feedback -->
-                        <div id="upload-status-panel" class="space-y-3 pt-2 hidden">
-                            <h3 class="text-sm font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                                Estado de Subida
-                            </h3>
 
-                            <div id="upload-status-list" class="space-y-2"></div>
+                        <!-- Preview Table -->
+                        <div id="preview-table-container" class="hidden">
+                            <div class="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800">
+                                <table class="w-full text-left border-collapse">
+                                    <thead class="bg-slate-50 dark:bg-slate-800/50">
+                                        <tr>
+                                            <th
+                                                class="px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                                Archivo</th>
+                                            <th
+                                                class="px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                                Formato</th>
+                                            <th
+                                                class="px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                                Departamento</th>
+                                            <th
+                                                class="px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                                Visibilidad</th>
+                                            <th
+                                                class="px-4 py-3 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                                Estado</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="preview-table-body">
+                                        <!-- Las filas se generarán dinámicamente -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                     <!--
@@ -210,7 +250,7 @@
     <script src="assets/js/utils.js"></script>
     <script src="assets/js/upload.js"></script>
     <script>document.addEventListener('DOMContentLoaded', loadSidebar);</script>
-    
+
 </body>
 
 </html>
