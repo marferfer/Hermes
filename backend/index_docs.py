@@ -1,95 +1,126 @@
-# index_docs.py
+# backend/index_docs.py
 import sys
 import os
-sys.path.append('src')
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from pathlib import Path
-from rag_engine import init_qdrant_collection
 from qdrant_client import QdrantClient
 from qdrant_client.http import models as rest
-from llama_index.core import Document
-from llama_index.vector_stores.qdrant import QdrantVectorStore
-from llama_index.core import VectorStoreIndex
 from unstructured.partition.auto import partition
-import json
+from llama_index.core import Document, VectorStoreIndex
+from llama_index.vector_stores.qdrant import QdrantVectorStore
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 
-def index_single_document(file_path, meta):
-    """Indexa un solo documento en Qdrant."""
-    try:
-        # Extraer texto del documento
-        elements = partition(filename=str(file_path))
-        text_content = "\n\n".join([str(el) for el in elements])
-        
-        if not text_content.strip():
-            print(f"⚠️  Documento vacío: {file_path.name}")
-            return False
-        
-        # Crear documento con metadatos
-        doc = Document(
-            text=text_content,
-            metadata={
-                "source_file": file_path.name,
-                "access_level": meta["access_level"],
-                "owner_department": meta["owner_department"]
-            }
-        )
-        
-        # Indexar en Qdrant
-        client = QdrantClient(url="http://localhost:6333", check_compatibility=False)
-        vector_store = QdrantVectorStore(client=client, collection_name="hermes_docs")
-        index = VectorStoreIndex.from_documents([doc], vector_store=vector_store)
-        
-        print(f"✅ Indexado: {file_path.name}")
-        return True
-        
-    except Exception as e:
-        print(f"❌ Error al indexar {file_path.name}: {str(e)}")
-        return False
+# Configuración
+QDRANT_URL = "http://localhost:6333"
+COLLECTION_NAME = "hermes_docs"
+PROJECT_ROOT = Path(__file__).parent.parent
+DOCS_DIR = PROJECT_ROOT / "docs"
 
 def main():
-    print("🔍 Iniciando indexación de documentos en Qdrant...")
+    # Inicializar cliente Qdrant
+    client = QdrantClient(url=QDRANT_URL, check_compatibility=False)
     
-    # Asegurar que la colección exista
-    init_qdrant_collection()
+    # Crear colección manualmente
+    try:
+        client.delete_collection(COLLECTION_NAME)
+        print("Colección anterior eliminada")
+    except:
+        pass
     
-    # Ruta de documentos
-    docs_dir = Path("docs")
-    if not docs_dir.exists():
-        print("❌ Carpeta 'docs' no existe")
+    print("Creando nueva colección...")
+    client.create_collection(
+        collection_name=COLLECTION_NAME,
+        vectors_config=rest.VectorParams(
+            size=384,
+            distance=rest.Distance.COSINE
+        )
+    )
+    print("✅ Colección creada")
+    
+    # Procesar documentos
+    if not DOCS_DIR.exists():
+        print("⚠️ Carpeta docs no existe")
         return
     
-    # Obtener lista de documentos
-    documents_to_index = []
-    for file_path in docs_dir.iterdir():
-        if (file_path.suffix in [".pdf", ".docx", ".txt", ".pptx", ".xlsx"] 
-            and not file_path.name.endswith(".meta.json")):
+    documents = []
+    for file_path in DOCS_DIR.iterdir():
+        if (file_path.suffix.lower() in [".pdf", ".docx", ".txt", ".pptx", ".xlsx"] 
+            and not file_path.name.endswith(".meta")):
+            
+            print(f"\n--- Procesando: {file_path.name} ---")
             
             # Cargar metadatos
-            meta_file = Path(str(file_path) + ".meta.json")
+            meta_file = Path(str(file_path) + ".meta")
             if meta_file.exists():
-                try:
-                    with open(meta_file, "r", encoding="utf-8") as f:
-                        meta = json.load(f)
-                except:
-                    meta = {"access_level": "publico", "owner_department": "IT"}
+                import json
+                with open(meta_file, "r", encoding="utf-8") as f:
+                    meta = json.load(f)
             else:
                 meta = {"access_level": "publico", "owner_department": "IT"}
             
-            documents_to_index.append((file_path, meta))
+            # Leer contenido
+            try:
+                print("  Extrayendo contenido...")
+                elements = partition(filename=str(file_path))
+                file_content = "\n\n".join([str(el) for el in elements])
+                
+                print(f"  Longitud del contenido: {len(file_content)} caracteres")
+                print(f"  Primeras 100 chars: {file_content[:100]}...")
+                
+                if len(file_content.strip()) < 10:  # Umbral mínimo
+                    print(f"  ⚠️ Contenido demasiado corto (< 10 chars)")
+                    continue
+                
+                doc = Document(
+                    text=file_content,
+                    metadata={
+                        "source_file": file_path.name,
+                        "access_level": meta["access_level"],
+                        "owner_department": meta["owner_department"]
+                    }
+                )
+                documents.append(doc)
+                print(f"  ✅ Documento añadido a la lista")
+                
+            except Exception as e:
+                print(f"  ❌ Error al procesar: {e}")
+                continue
     
-    if not documents_to_index:
-        print("⚠️  No se encontraron documentos para indexar")
+    print(f"\nTotal documentos preparados para indexar: {len(documents)}")
+    
+    if not documents:
+        print("⚠️ No hay documentos válidos para indexar")
         return
     
-    print(f"📁 Encontrados {len(documents_to_index)} documentos")
-    
-    # Indexar cada documento
-    indexed_count = 0
-    for file_path, meta in documents_to_index:
-        if index_single_document(file_path, meta):
-            indexed_count += 1
-    
-    print(f"✅ Indexación completada: {indexed_count}/{len(documents_to_index)} documentos procesados")
+    # Indexar en Qdrant con debug
+    print(f"\nIndexando {len(documents)} documentos...")
+    embed_model = HuggingFaceEmbedding(model_name="sentence-transformers/all-MiniLM-L6-v2")
+
+    # Crear vector store
+    vector_store = QdrantVectorStore(
+        client=client,
+        collection_name=COLLECTION_NAME,
+        embedding_dimension=384
+    )
+
+    # Crear storage context
+    from llama_index.core import StorageContext
+    storage_context = StorageContext.from_defaults(vector_store=vector_store)
+
+    # Crear el índice CON STORAGE CONTEXT (esto fuerza la persistencia)
+    index = VectorStoreIndex.from_documents(
+        documents,
+        embed_model=embed_model,
+        storage_context=storage_context,
+        show_progress=True
+    )
+
+    # Verificar puntos en Qdrant
+    info = client.get_collection(COLLECTION_NAME)
+    print(f"\n✅ ¡Indexación completada!")
+    print(f"   Puntos en Qdrant: {info.points_count}")
+    print(f"   Documentos procesados: {len(documents)}")
 
 if __name__ == "__main__":
     main()

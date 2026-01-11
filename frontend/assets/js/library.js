@@ -134,6 +134,13 @@ function createDocumentRow(doc) {
                 ${doc.file_size ? (doc.file_size / 1024).toFixed(0) : '0'} KB
             </td>
             <td class="px-6 py-4 text-center">
+                <!-- Botón de descarga -->
+                <a href="http://localhost:8000/api/documents/${encodeURIComponent(doc.filename)}/download" 
+                   class="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all mr-2" 
+                   title="Descargar archivo">
+                    <span class="material-symbols-outlined text-[20px]">download</span>
+                </a>
+                <!-- Botón de eliminar -->
                 ${deleteButton}
             </td>
         </tr>
@@ -532,6 +539,80 @@ function closePreviewModal() {
     document.getElementById('preview-modal').classList.add('hidden');
 }
 
+
+// Exportar documentos a CSV
+function exportDocumentsToCSV() {
+    let documentsToExport = [];
+    
+    // Obtener documentos desde el sistema de filtros si está disponible
+    if (window.DocumentFilters && window.DocumentFilters.filteredDocuments) {
+        documentsToExport = window.DocumentFilters.filteredDocuments;
+    } else {
+        // Fallback: obtener todos los documentos de la tabla actual
+        const tableRows = document.querySelectorAll('tbody tr');
+        documentsToExport = Array.from(tableRows).map(row => {
+            const cells = row.querySelectorAll('td');
+            return {
+                filename: cells[0].querySelector('.cursor-pointer')?.textContent || '',
+                owner_department: cells[1].textContent.trim(),
+                access_level: cells[2].textContent.trim(),
+                file_size: cells[3].textContent.replace(' KB', '').trim()
+            };
+        }).filter(doc => doc.filename);
+    }
+    
+    if (documentsToExport.length === 0) {
+        alert('No hay documentos para exportar');
+        return;
+    }
+    
+    // Crear contenido CSV
+    const headers = ['Nombre del Archivo', 'Departamento', 'Nivel de Acceso', 'Tamaño (KB)'];
+    const csvContent = [
+        headers.join(','),
+        ...documentsToExport.map(doc => {
+            // Escapar comillas y comas en los valores
+            const escapeCsvValue = (value) => {
+                if (typeof value === 'string' && (value.includes(',') || value.includes('"') || value.includes('\n'))) {
+                    return `"${value.replace(/"/g, '""')}"`;
+                }
+                return value;
+            };
+            
+            const sizeKB = doc.file_size ? Math.round(doc.file_size / 1024) : 0;
+            
+            return [
+                escapeCsvValue(doc.filename),
+                escapeCsvValue(doc.owner_department),
+                escapeCsvValue(getAccessText(doc.access_level)),
+                sizeKB
+            ].join(',');
+        })
+    ].join('\n');
+    
+    // Crear y descargar archivo
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `documentos_hermes_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+}
+
+// Helper para texto de acceso
+function getAccessText(accessLevel) {
+    switch(accessLevel) {
+        case 'publico': return 'Público';
+        case 'departamento': return 'Restringido';
+        case 'privado': return 'Privado';
+        default: return accessLevel;
+    }
+}
+
 // Inicializa la biblioteca
 document.addEventListener('DOMContentLoaded', async () => {
     const closeBtn = document.getElementById('close-preview');
@@ -557,5 +638,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                 closePreviewModal();
             }
         });
+    }
+
+    // Evento de exportación CSV
+    const exportBtn = document.getElementById('export-csv-btn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportDocumentsToCSV);
     }
 });

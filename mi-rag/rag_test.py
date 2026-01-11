@@ -17,7 +17,7 @@ embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-m3")
 
 # 3. LLM local (Llama 3)
 print("Conectando con Ollama (Llama 3)...")
-llm = Ollama(model="llama3", temperature=0.1, request_timeout=120.0)
+llm = Ollama(model="phi3", temperature=0.1, request_timeout=300.0)
 
 # 4. Crear índice vectorial
 print("Creando índice vectorial...")

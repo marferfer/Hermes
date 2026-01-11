@@ -7,6 +7,8 @@ import os
 import json
 from pathlib import Path
 import shutil
+from rag_engine import query_rag
+import asyncio
 
 app = FastAPI()
 
@@ -227,3 +229,43 @@ async def download_document(filename: str):
         media_type=media_type,
         filename=filename  # Esto fuerza el nombre de descarga
     )
+
+
+###### Chat RAG Endpoint
+@app.post("/api/chat/query")
+async def chat_query(request: Request):
+    """Endpoint para consultar el RAG"""
+    try:
+        data = await request.json()
+        question = data.get("question", "")
+        
+        if not question.strip():
+            raise HTTPException(status_code=400, detail="Pregunta vacía")
+        
+        print(f"🔍 Procesando pregunta: {question[:50]}...")
+        
+        # Obtener departamento del usuario (usa valor fijo por ahora)
+        user_department = "[1014] Sistemas"
+        
+        # Importar aquí para ver errores de importación
+        from rag_engine import query_rag
+        
+        # Ejecutar RAG de forma asíncrona
+        import asyncio
+        loop = asyncio.get_event_loop()
+        print("🧠 Consultando RAG...")
+        response, sources = await loop.run_in_executor(None, query_rag, question, user_department)
+        print(f"✅ Respuesta recibida: {response[:100]}...")
+        
+        return {
+            "response": response,
+            "sources": sources,
+            "timestamp": datetime.now().strftime("%H:%M")
+        }
+        
+    except Exception as e:
+        print(f"❌ ERROR DETALLADO EN CHAT: {str(e)}")
+        print(f"Tipo de error: {type(e).__name__}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Error interno del servidor")

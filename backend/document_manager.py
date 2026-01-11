@@ -111,7 +111,7 @@ def _index_single_document(filename: str, content: bytes, access_level: str, own
         )
         
         # Conectar a Qdrant
-        client = QdrantClient(url=QDRANT_URL)
+        client = QdrantClient(url=QDRANT_URL, check_compatibility=False)
         
         # Verificar si la colección existe, si no, crearla
         collections = client.get_collections()
@@ -153,7 +153,7 @@ def _delete_from_qdrant(filename: str):
         QDRANT_URL = "http://localhost:6333"
         COLLECTION_NAME = "hermes_docs"
         
-        client = QdrantClient(url=QDRANT_URL)
+        client = QdrantClient(url=QDRANT_URL, check_compatibility=False)
         
         # Buscar puntos con este filename
         points = client.scroll(
