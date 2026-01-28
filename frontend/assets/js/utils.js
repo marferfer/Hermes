@@ -1,14 +1,6 @@
 // frontend/assets/js/utils.js
 
-// ✅ USUARIO FIJO DE PRUEBA (sin autenticación)
-const MOCK_USER = {
-  preferred_username: "marferfer",
-  sub: "255c21b2-f0c0-4fb3-8dd1-01e0943aa5cd",
-  realm_access: { roles: ["[1014] Sistemas"] },
-  email: "marferfer@hermes.corp", // ← añadido
-  name: "Mario Fernández Fernández" // ← añadido
-};
-
+// ✅ ELIMINAR MOCK_USER - ahora usamos autenticación real
 // Mapa de rutas → IDs de navegación
 const PAGE_MAP = {
   'chat.html': 'nav-chat',
@@ -40,17 +32,34 @@ function updateActiveNav() {
   }
 }
 
+// ✅ NUEVA FUNCIÓN: obtener departamento del usuario real
+function getUserDepartment() {
+    const user = getUserInfo();
+    if (!user) return "IT";
+    
+    const roles = user.realm_access?.roles || [];
+    const validDepartments = ["[1014] Sistemas", "IT", "Finanzas", "RRHH", "Marketing", "Dirección"];
+    return roles.find(role => validDepartments.includes(role)) || "IT";
+}
+
+// ✅ NUEVA FUNCIÓN: obtener username real
+function getCurrentUsername() {
+    const user = getUserInfo();
+    return user?.preferred_username || "unknown";
+}
+
 // Función para cargar el perfil del usuario (sidebar)
 function loadUserProfile() {
-  const roles = MOCK_USER.realm_access?.roles || [];
-  const validDepartments = ["[1014] Sistemas", "IT", "Finanzas", "RRHH", "Marketing", "Dirección"];
-  const department = roles.find(role => validDepartments.includes(role)) || "IT";
+  const user = getUserInfo();
+  if (!user) return;
+  
+  const department = getUserDepartment();
   
   // Sidebar
   const usernameElement = document.getElementById('sidebar-username');
   const departmentElement = document.getElementById('sidebar-department');
   
-  if (usernameElement) usernameElement.textContent = MOCK_USER.preferred_username;
+  if (usernameElement) usernameElement.textContent = user.preferred_username;
   if (departmentElement) departmentElement.textContent = department;
   
   // Header del chat (si existe)
@@ -63,22 +72,23 @@ function loadFullProfile() {
   // Solo ejecutar si estamos en perfil.html
   if (getCurrentPage() !== 'perfil.html') return;
   
-  // Datos del usuario
-  const roles = MOCK_USER.realm_access?.roles || [];
-  const validDepartments = ["[1014] Sistemas", "IT", "Finanzas", "RRHH", "Marketing", "Dirección"];
-  const department = roles.find(role => validDepartments.includes(role)) || "IT";
+  const user = getUserInfo();
+  if (!user) return;
+  
+  const roles = user.realm_access?.roles || [];
+  const department = getUserDepartment();
   
   // Actualizar todos los elementos del perfil
-  setTextContent('profile-name', MOCK_USER.name);
-  setTextContent('profile-username', MOCK_USER.preferred_username);
-  setTextContent('profile-sub', MOCK_USER.sub);
-  setTextContent('profile-email', MOCK_USER.email);
-  setTextContent('profile-email-detail', MOCK_USER.email);
+  setTextContent('profile-name', user.name || user.preferred_username);
+  setTextContent('profile-username', user.preferred_username);
+  setTextContent('profile-sub', user.sub);
+  setTextContent('profile-email', user.email);
+  setTextContent('profile-email-detail', user.email);
   setTextContent('profile-department', department);
   setTextContent('profile-last-login', getCurrentDateTime());
   
   // Avatar
-  const avatarUrl = "https://lh3.googleusercontent.com/aida-public/AB6AXuCHdVtt7YdJfi375z6H-H-uctzfgW2HO8GePYK9sXRd5DMAyaWogrcLH7s0tH_rpKt2kS4kpquor-868kECWdb1DcHyTPC4OCvQAPfOBdHVE-1rsM8yDQw0sJuI-b040LU2ai_kUawTC-vF6ayZdI-v8vERgManQYDYaDwuGtCY2o81qyiuxI83hu5xYKQT0GokgwJXoQsTslaAgDC6RQtrWsRAVa0cQgZlBQA5RxJ-iLUCAS-M47N2eEyaFXS01RZizKgOEXcfeUce";
+  const avatarUrl = user.picture || "https://lh3.googleusercontent.com/aida-public/AB6AXuCHdVtt7YdJfi375z6H-H-uctzfgW2HO8GePYK9sXRd5DMAyaWogrcLH7s0tH_rpKt2kS4kpquor-868kECWdb1DcHyTPC4OCvQAPfOBdHVE-1rsM8yDQw0sJuI-b040LU2ai_kUawTC-vF6ayZdI-v8vERgManQYDYaDwuGtCY2o81qyiuxI83hu5xYKQT0GokgwJXoQsTslaAgDC6RQtrWsRAVa0cQgZlBQA5RxJ-iLUCAS-M47N2eEyaFXS01RZizKgOEXcfeUce";
   const avatarElement = document.getElementById('profile-avatar');
   if (avatarElement) avatarElement.style.backgroundImage = `url('${avatarUrl}')`;
   
@@ -124,7 +134,7 @@ async function loadSidebar() {
     // Actualizar todo lo relacionado con el usuario
     updateActiveNav();
     loadUserProfile();
-    loadFullProfile(); // ← carga perfil si estamos en perfil.html
+    loadFullProfile();
     
   } catch (error) {
     console.error('Error al cargar el sidebar:', error);
@@ -133,10 +143,5 @@ async function loadSidebar() {
 
 // Función de logout
 function logout() {
-  Swal.fire({
-      icon: "error",
-      title: "Oops...",
-      text: "Logout deshabilitado en modo desarrollo",
-      //footer: '<a href="#">Why do I have this issue?</a>'
-    });
+    window.logout(); // Usa la función de auth.js
 }

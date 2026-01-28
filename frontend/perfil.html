@@ -14,9 +14,12 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
         rel="stylesheet" />
+    <!-- Favicon adaptativo -->
+    <link id="favicon-light" rel="icon" href="assets/img/HermesBlackIco.ico" media="(prefers-color-scheme: light)">
+    <link id="favicon-dark" rel="icon" href="assets/img/HermesWhiteIco.ico" media="(prefers-color-scheme: dark)">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Tailwind Config -->
     <script>
         tailwind.config = {
@@ -117,9 +120,11 @@
                         <div
                             class="px-6 py-4 border-b border-slate-100 dark:border-slate-700 flex justify-between items-center bg-slate-50/50 dark:bg-slate-800/30">
                             <h3 class="font-bold text-lg text-text-primary dark:text-white">Detalles de la Cuenta</h3>
-                            <span
-                                class="text-xs font-medium px-2 py-1 rounded bg-slate-200 dark:bg-slate-700 text-text-secondary dark:text-slate-300">Solo
-                                Lectura</span>
+                            <button id="edit-profile-btn"
+                                class="inline-flex items-center gap-2 px-3 py-1.5 bg-primary hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">edit</span>
+                                <span>Editar Perfil</span>
+                            </button>
                         </div>
                         <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-y-8 gap-x-12">
                             <!-- Field: Usuario -->
@@ -187,7 +192,160 @@
         </div>
     </main>
 
-    <script src="assets/js/utils.js"></script>
+    <!-- Modal de Edición de Perfil -->
+    <div id="edit-profile-modal"
+        class="fixed inset-0 z-50 hidden bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <!-- Header del modal -->
+            <div class="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
+                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Editar Perfil</h3>
+                <button id="close-edit-modal"
+                    class="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-full hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <span class="material-symbols-outlined">close</span>
+                </button>
+            </div>
+
+            <!-- Formulario de edición -->
+            <form id="profile-edit-form" class="p-6 space-y-6">
+                <!-- Nombre de usuario -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Nombre de usuario
+                    </label>
+                    <input type="text" id="edit-username"
+                        class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none"
+                        placeholder="Tu nombre de usuario">
+                    <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Este nombre se mostrará en el sistema</p>
+                </div>
+
+                <!-- Departamentos (selección múltiple) -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Departamentos
+                    </label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" name="departments" value="[1014] Sistemas"
+                                class="rounded text-primary focus:ring-primary">
+                            <span class="text-sm text-slate-700 dark:text-slate-300">[1014] Sistemas</span>
+                        </label>
+                        <label class="flex items center gap-2">
+                            <input type="checkbox" name="departments" value="RRHH"
+                                class="rounded text-primary focus:ring-primary">
+                            <span class="text-sm text-slate-700 dark:text-slate-300">Recursos Humanos</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" name="departments" value="Finanzas"
+                                class="rounded text-primary focus:ring-primary">
+                            <span class="text-sm text-slate-700 dark:text-slate-300">Finanzas</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" name="departments" value="IT"
+                                class="rounded text-primary focus:ring-primary">
+                            <span class="text-sm text-slate-700 dark:text-slate-300">Tecnología (TI)</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" name="departments" value="Marketing"
+                                class="rounded text-primary focus:ring-primary">
+                            <span class="text-sm text-slate-700 dark:text-slate-300">Marketing</span>
+                        </label>
+                        <label class="flex items-center gap-2">
+                            <input type="checkbox" name="departments" value="Dirección"
+                                class="rounded text-primary focus:ring-primary">
+                            <span class="text-sm text-slate-700 dark:text-slate-300">Dirección</span>
+                        </label>
+                    </div>
+                    <p class="mt-2 text-xs text-slate-500 dark:text-slate-400">Puedes pertenecer a varios departamentos
+                    </p>
+                </div>
+
+                <!-- Imagen de perfil -->
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                        Imagen de perfil
+                    </label>
+                    <div class="flex items-center gap-4">
+                        <div class="relative">
+                            <div
+                                class="size-16 rounded-full overflow-hidden border-2 border-slate-300 dark:border-slate-600">
+                                <img id="preview-avatar" src="" alt="Vista previa" class="w-full h-full object-cover">
+                            </div>
+                            <label
+                                class="absolute bottom-0 right-0 bg-primary text-white p-1 rounded-full cursor-pointer">
+                                <span class="material-symbols-outlined text-[16px]">photo_camera</span>
+                                <input type="file" id="avatar-upload" accept="image/*" class="hidden">
+                            </label>
+                        </div>
+                        <p class="text-xs text-slate-500 dark:text-slate-400">JPG, PNG o GIF (máx. 2MB)</p>
+                    </div>
+                </div>
+
+                <!-- Cambio de contraseña -->
+                <div class="border-t border-slate-200 dark:border-slate-700 pt-6">
+                    <h4 class="text-sm font-semibold text-slate-900 dark:text-white mb-4">Cambiar contraseña</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                Contraseña actual
+                            </label>
+                            <input type="password" id="current-password"
+                                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                Nueva contraseña
+                            </label>
+                            <input type="password" id="new-password"
+                                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                            <p class="mt-1 text-xs text-slate-500 dark:text-slate-400">Mínimo 8 caracteres, con número y
+                                carácter especial</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                                Confirmar nueva contraseña
+                            </label>
+                            <input type="password" id="confirm-password"
+                                class="w-full px-3 py-2 bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-primary focus:border-primary outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Botones de acción -->
+                <div class="flex gap-3 pt-4">
+                    <button type="button" id="cancel-edit"
+                        class="px-4 py-2 text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 rounded-lg text-sm font-medium transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit"
+                        class="px-4 py-2 bg-primary hover:bg-blue-600 text-white rounded-lg text-sm font-medium transition-colors">
+                        Guardar cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Al final de cada página -->
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/utils.js"></script>
+<script>
+    // Verificar autenticación al cargar
+    document.addEventListener('DOMContentLoaded', async () => {
+        const authenticated = await initAuth();
+        if (!authenticated && !window.location.pathname.includes('index.html')) {
+            return; // initAuth ya redirigió
+        }
+        
+        // Cargar contenido normal
+        await loadSidebar();
+        
+        // Inicializar página específica si es necesario
+        if (typeof initializePage === 'function') {
+            initializePage();
+        }
+    });
+</script>
+    <script src="assets/js/profile.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', loadSidebar);
     </script>

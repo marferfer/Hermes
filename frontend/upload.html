@@ -15,9 +15,15 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
         rel="stylesheet" />
+<!-- Favicon adaptativo -->
+    <link id="favicon-light" rel="icon" href="assets/img/HermesBlackIco.ico" media="(prefers-color-scheme: light)">
+    <link id="favicon-dark" rel="icon" href="assets/img/HermesWhiteIco.ico" media="(prefers-color-scheme: dark)">
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
         rel="stylesheet" />
+<!-- Favicon adaptativo -->
+    <link id="favicon-light" rel="icon" href="assets/img/HermesBlackIco.ico" media="(prefers-color-scheme: light)">
+    <link id="favicon-dark" rel="icon" href="assets/img/HermesWhiteIco.ico" media="(prefers-color-scheme: dark)">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -247,7 +253,26 @@
             </div>
         </div>
     </main>
-    <script src="assets/js/utils.js"></script>
+    <!-- Al final de cada página -->
+<script src="assets/js/auth.js"></script>
+<script src="assets/js/utils.js"></script>
+<script>
+    // Verificar autenticación al cargar
+    document.addEventListener('DOMContentLoaded', async () => {
+        const authenticated = await initAuth();
+        if (!authenticated && !window.location.pathname.includes('index.html')) {
+            return; // initAuth ya redirigió
+        }
+        
+        // Cargar contenido normal
+        await loadSidebar();
+        
+        // Inicializar página específica si es necesario
+        if (typeof initializePage === 'function') {
+            initializePage();
+        }
+    });
+</script>
     <script src="assets/js/upload.js"></script>
     <script>document.addEventListener('DOMContentLoaded', loadSidebar);</script>
 

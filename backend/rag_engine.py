@@ -13,7 +13,7 @@ from unstructured.partition.auto import partition
 Settings.embed_model = HuggingFaceEmbedding(
     model_name="sentence-transformers/all-MiniLM-L6-v2"
 )
-Settings.llm = Ollama(model="phi3:mini", temperature=0.1, request_timeout=120.0)
+Settings.llm = Ollama(model="gemma:2b-instruct-q8_0", temperature=0.1, request_timeout=120.0)
 Settings.chunk_size = 512
 
 # Configuración
@@ -121,51 +121,67 @@ def index_documents():
     else:
         print("\n⚠️ No hay documentos válidos para indexar")
 
-def query_rag(question: str, user_department: str = "IT") -> tuple[str, list[str]]:
-    """Consulta Qdrant con filtrado de permisos en tiempo real."""
+def query_rag(question: str) -> tuple[str, list[str]]:
+    """Consulta Qdrant con búsqueda híbrida"""
     index = get_index()
     
-    # Crear filtro de permisos para Qdrant
-    permission_filter = rest.Filter(
-        should=[
-            # Público: accesible para todos
-            rest.FieldCondition(
-                key="access_level",
-                match=rest.MatchValue(value="publico")
-            ),
-            # Mismo departamento
-            rest.FieldCondition(
-                key="owner_department",
-                match=rest.MatchValue(value=user_department)
-            )
-        ]
-    )
+    # Método 1: Búsqueda semántica normal
+    semantic_retriever = index.as_retriever(similarity_top_k=5)
+    semantic_nodes = semantic_retriever.retrieve(question)
     
-    # Configurar retriever con filtro
-    retriever = index.as_retriever(
-        similarity_top_k=5,
-        vector_store_kwargs={"qdrant_filters": permission_filter}
-    )
+    # Método 2: Búsqueda específica por nombres de archivo
+    from qdrant_client.http import models as rest
+    filename_nodes = []
     
-    # Obtener nodos relevantes
-    nodes = retriever.retrieve(question)
+    # Extraer nombres de archivos mencionados en la pregunta
+    import re
+    filename_pattern = r'\b[\w-]+\.docx|\b[\w-]+\.pdf|\b[\w-]+\.txt|\b[\w-]+\.xlsx'
+    mentioned_files = re.findall(filename_pattern, question, re.IGNORECASE)
     
-    if not nodes:
-        return "🔒 No tienes permiso para acceder a información sobre esa pregunta.", []
+    if mentioned_files:
+        for filename in mentioned_files[:2]:  # Máximo 2 archivos
+            try:
+                file_filter = rest.Filter(
+                    must=[
+                        rest.FieldCondition(
+                            key="source_file",
+                            match=rest.MatchValue(value=filename)
+                        )
+                    ]
+                )
+                file_retriever = index.as_retriever(
+                    similarity_top_k=3,
+                    vector_store_kwargs={"qdrant_filters": file_filter}
+                )
+                file_nodes = file_retriever.retrieve("contenido del documento")
+                filename_nodes.extend(file_nodes)
+            except:
+                pass
     
-    # Extraer fuentes únicas
-    sources = list(set([node.metadata.get("source_file", "documento") for node in nodes]))
+    # Combinar resultados
+    all_nodes = semantic_nodes + filename_nodes
+    # Eliminar duplicados
+    seen_ids = set()
+    unique_nodes = []
+    for node in all_nodes:
+        if node.node_id not in seen_ids:
+            unique_nodes.append(node)
+            seen_ids.add(node.node_id)
     
-    # Construir contexto y responder
-    context = "\n\n".join([node.get_content() for node in nodes])
+    if not unique_nodes:
+        return "No se encontró información relevante en los documentos disponibles.", []
+    
+    sources = list(set([node.metadata.get("source_file", "documento") for node in unique_nodes]))
+    context = "\n\n".join([node.get_content() for node in unique_nodes])
+    
     full_prompt = (
-        f"Responde en español usando SOLO la información del contexto.\n"
-        f"Si no sabes la respuesta, di 'No sé'.\n\n"
-        f"Contexto:\n{context}\n\n"
+        f"Responde en español usando la información proporcionada.\n"
+        f"Si la información no es suficiente, di 'No tengo suficiente información'.\n\n"
+        f"Información:\n{context}\n\n"
         f"Pregunta: {question}\n\n"
         f"Respuesta:"
     )
     
-    llm = Ollama(model="phi3:mini", temperature=0.1, request_timeout=120.0)
+    llm = Ollama(model="gemma:2b-instruct-q8_0", temperature=0.1, request_timeout=120.0)
     response = llm.complete(full_prompt)
     return str(response), sources

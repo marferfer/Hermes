@@ -5,7 +5,8 @@ const CONFIG = {
     keycloakUrl: 'http://localhost:8080',
     realm: 'hermes',
     clientId: 'hermes-app',
-    redirectUri: 'http://localhost:8081/'
+    // ✅ CORREGIR redirectUri para que apunte a tu estructura real
+    redirectUri: 'http://localhost:5500/frontend/chat.html'
 };
 
 // Función para obtener el código de la URL
@@ -14,9 +15,9 @@ function getCallbackCode() {
     return urlParams.get('code');
 }
 
-// Función para intercambiar el código por tokens (versión con logging)
+// Función para intercambiar el código por tokens
 async function exchangeCodeForTokens(code) {
-    console.log("🔄 Intercambiando código por tokens. Código:", code);
+    console.log("🔄 Intercambiando código por tokens...");
 
     try {
         const response = await fetch('http://localhost:8000/api/keycloak/token', {
@@ -32,7 +33,7 @@ async function exchangeCodeForTokens(code) {
         }
 
         const tokens = await response.json();
-        console.log("✅ Tokens recibidos:", tokens);
+        console.log("✅ Tokens recibidos");
 
         // Verificar que los tokens sean válidos
         if (!tokens || !tokens.access_token) {
@@ -41,7 +42,7 @@ async function exchangeCodeForTokens(code) {
 
         // Intentar decodificar el JWT
         const user = parseJwt(tokens.access_token);
-        console.log("👤 Usuario decodificado:", user);
+        console.log("👤 Usuario decodificado:", user.preferred_username);
 
         // Guardar solo si todo fue bien
         saveTokens(tokens);
@@ -50,23 +51,21 @@ async function exchangeCodeForTokens(code) {
 
     } catch (error) {
         console.error('❌ Error al obtener tokens:', error);
-        //alert('❌ Error de autenticación. Por favor, contacta con soporte.');
         Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: "❌ Error de autenticación. Por favor, contacta con soporte.",
-          //footer: '<a href="#">Why do I have this issue?</a>'
+            icon: "error",
+            title: "Autenticación fallida",
+            text: "No se pudo completar la autenticación. Por favor, inténtalo de nuevo.",
         });
         return null;
     }
 }
 
-// Función para decodificar el token JWT (CORREGIDA)
+// Función para decodificar el token JWT
 function parseJwt(token) {
     try {
         const base64Url = token.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = atob(base64); // ← Solo atob, sin decodeURIComponent
+        const jsonPayload = atob(base64);
         return JSON.parse(jsonPayload);
     } catch (e) {
         console.error("❌ JWT inválido:", e.message || e);
@@ -74,7 +73,7 @@ function parseJwt(token) {
     }
 }
 
-// Función para guardar tokens en localStorage (versión robusta)
+// ✅ USAR sessionStorage EN LUGAR DE localStorage (más seguro)
 function saveTokens(tokens) {
     try {
         if (!tokens || !tokens.access_token) {
@@ -83,26 +82,23 @@ function saveTokens(tokens) {
         
         const user = parseJwt(tokens.access_token);
         
-        // Validar que el usuario tenga datos mínimos
         if (!user || !user.sub) {
             throw new Error("Invalid user data in token");
         }
         
-        localStorage.setItem('hermes_tokens', JSON.stringify(tokens));
-        localStorage.setItem('hermes_user', JSON.stringify(user));
+        // ✅ sessionStorage es más seguro para tokens
+        sessionStorage.setItem('hermes_tokens', JSON.stringify(tokens));
+        sessionStorage.setItem('hermes_user', JSON.stringify(user));
         console.log("✅ Sesión guardada correctamente");
-        console.log("👤 Usuario:", user.preferred_username || user.sub);
         
     } catch (e) {
         console.error("❌ Error al guardar sesión:", e);
-        localStorage.removeItem('hermes_tokens');
-        localStorage.removeItem('hermes_user');
-        //alert("Error al procesar la autenticación. Por favor, inténtalo de nuevo.");
+        sessionStorage.removeItem('hermes_tokens');
+        sessionStorage.removeItem('hermes_user');
         Swal.fire({
-          icon: "error",
-          title: "Oops...",
-          text: "❌ Error al procesar la autenticación. Por favor, inténtalo de nuevo.",
-          //footer: '<a href="#">Why do I have this issue?</a>'
+            icon: "error",
+            title: "Error de sesión",
+            text: "Error al procesar la autenticación. Por favor, inténtalo de nuevo.",
         });
     }
 }
@@ -113,9 +109,35 @@ function redirectToKeycloak() {
         `?client_id=${CONFIG.clientId}` +
         `&redirect_uri=${encodeURIComponent(CONFIG.redirectUri)}` +
         `&response_type=code` +
-        `&scope=openid profile email roles`;
+        `&scope=openid profile email`;
     
     window.location.href = authUrl;
+}
+
+// ✅ NUEVA FUNCIÓN: verificar si hay sesión activa
+function isAuthenticated() {
+    const tokens = sessionStorage.getItem('hermes_tokens');
+    if (!tokens) return false;
+    
+    try {
+        const parsed = JSON.parse(tokens);
+        const user = parseJwt(parsed.access_token);
+        const now = Math.floor(Date.now() / 1000);
+        return user.exp > now;
+    } catch (e) {
+        return false;
+    }
+}
+
+// ✅ NUEVA FUNCIÓN: obtener información del usuario
+function getUserInfo() {
+    const userStr = sessionStorage.getItem('hermes_user');
+    if (!userStr) return null;
+    try {
+        return JSON.parse(userStr);
+    } catch (e) {
+        return null;
+    }
 }
 
 // Función principal de inicialización
@@ -126,19 +148,24 @@ async function initAuth() {
         // Estamos en el callback de Keycloak
         const tokens = await exchangeCodeForTokens(code);
         if (tokens) {
-            saveTokens(tokens);
-            // 🔥 ELIMINAR EL CÓDIGO DE LA URL ANTES DE REDIRIGIR
-            window.history.replaceState({}, document.title, window.location.origin + '/');
-            window.location.href = 'chat.html';
+            // Eliminar el código de la URL y redirigir a chat.html
+            window.history.replaceState({}, document.title, window.location.origin + '/frontend/chat.html');
+            window.location.href = '/frontend/chat.html';
         }
     } else {
         // Verificar si ya estamos autenticados
-        const tokens = localStorage.getItem('hermes_tokens');
-        if (tokens) {
-            // Ya autenticado, ir al chat
-            window.location.href = 'chat.html';
+        if (isAuthenticated()) {
+            return true;
+        } else {
+            // No autenticado
+            if (window.location.pathname.includes('index.html')) {
+                return false;
+            } else {
+                // Redirigir a login
+                redirectToKeycloak();
+                return false;
+            }
         }
-        // Si no, mostrar el botón de login (ya está en el HTML)
     }
 }
 
@@ -148,14 +175,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginButton) {
         loginButton.addEventListener('click', redirectToKeycloak);
     }
-    
-    // Inicializar autenticación
-    initAuth();
 });
 
 // Función para cerrar sesión
 function logout() {
-    localStorage.removeItem('hermes_tokens');
-    localStorage.removeItem('hermes_user');
-    window.location.href = 'index.html';
+    sessionStorage.removeItem('hermes_tokens');
+    sessionStorage.removeItem('hermes_user');
+    
+    // Redirigir a logout de Keycloak
+    const clientId = 'hermes-app';
+    const postLogoutRedirectUri = encodeURIComponent(window.location.origin + '/index.html');
+    window.location.href = `http://localhost:8080/realms/hermes/protocol/openid-connect/logout?client_id=${clientId}&post_logout_redirect_uri=${postLogoutRedirectUri}`;
 }
+
+// Exportar funciones globales
+window.isAuthenticated = isAuthenticated;
+window.getUserInfo = getUserInfo;
+window.logout = logout;

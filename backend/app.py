@@ -43,6 +43,8 @@ async def keycloak_token(request: Request):
     """Proxy para intercambiar código por tokens (evita CORS)"""
     data = await request.json()
     
+    # ✅ USAR EL MISMO redirect_uri que en auth.js
+    redirect_uri = "http://localhost:5500/frontend/chat.html"
     response = requests.post(
         f"{KEYCLOAK_URL}/realms/{REALM}/protocol/openid-connect/token",
         data={
@@ -50,9 +52,17 @@ async def keycloak_token(request: Request):
             "client_id": CLIENT_ID,
             "client_secret": CLIENT_SECRET,
             "code": data["code"],
-            "redirect_uri": "http://localhost:8081/"
+            "redirect_uri": redirect_uri
         }
     )
+    
+    # ✅ AÑADIR LOGGING
+    print("🔑 Respuesta de Keycloak:", response.status_code)
+    print("📄 Body:", response.text)
+    
+    if not response.ok:
+        print(f"❌ Error Keycloak: {response.status_code} - {response.text}")
+        raise HTTPException(status_code=response.status_code, detail="Error de autenticación")
     
     return response.json()
 
@@ -236,6 +246,71 @@ async def download_document(filename: str):
 async def chat_query(request: Request):
     """Endpoint para consultar el RAG"""
     try:
+        # Debug: Verificar que recibimos la petición
+        print("📥 Recibida petición al endpoint /api/chat/query")
+        
+        data = await request.json()
+        question = data.get("question", "")
+        print(f"❓ Pregunta recibida: {question[:50]}...")
+        
+        if not question.strip():
+            print("❌ Pregunta vacía")
+            raise HTTPException(status_code=400, detail="Pregunta vacía")
+        
+        # Asegurar que estamos en el directorio correcto
+        import os
+        print(f"📁 Directorio actual: {os.getcwd()}")
+        print(f"📄 Archivos en directorio: {os.listdir('.')}")
+        
+        # Importar rag_engine con manejo de errores detallado
+        try:
+            from rag_engine import query_rag
+            print("✅ Módulo rag_engine importado correctamente")
+        except Exception as import_error:
+            print(f"❌ Error al importar rag_engine: {import_error}")
+            import traceback
+            traceback.print_exc()
+            raise HTTPException(status_code=500, detail="Error al cargar el motor RAG")
+        
+        # Obtener departamento del usuario
+        user_department = "[1014] Sistemas"
+        print(f"👥 Departamento del usuario: {user_department}")
+        
+        # Ejecutar RAG
+        import asyncio
+        loop = asyncio.get_event_loop()
+        print("🧠 Iniciando consulta RAG...")
+        
+        try:
+            response, sources = await loop.run_in_executor(None, query_rag, question)
+            print(f"✅ RAG completado. Fuentes: {len(sources)}")
+        except Exception as rag_error:
+            print(f"❌ Error en query_rag: {rag_error}")
+            import traceback
+            traceback.print_exc()
+            raise HTTPException(status_code=500, detail="Error en el motor RAG")
+        
+        # Preparar respuesta
+        from datetime import datetime
+        result = {
+            "response": response,
+            "sources": sources,
+            "timestamp": datetime.now().strftime("%H:%M")
+        }
+        print("📤 Enviando respuesta al cliente")
+        return result
+        
+    except HTTPException:
+        # Re-lanzar excepciones HTTP
+        raise
+    except Exception as e:
+        # Capturar cualquier otro error
+        print(f"💥 ERROR NO MANEJADO EN CHAT: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Error interno del servidor")
+    """Endpoint para consultar el RAG"""
+    try:
         data = await request.json()
         question = data.get("question", "")
         
@@ -248,13 +323,18 @@ async def chat_query(request: Request):
         user_department = "[1014] Sistemas"
         
         # Importar aquí para ver errores de importación
-        from rag_engine import query_rag
+        try:
+            from rag_engine import query_rag
+            print("✅ rag_engine importado correctamente")
+        except ImportError as e:
+            print(f"❌ Error al importar rag_engine: {e}")
+            raise HTTPException(status_code=500, detail="Error al cargar el motor RAG")
         
         # Ejecutar RAG de forma asíncrona
         import asyncio
         loop = asyncio.get_event_loop()
         print("🧠 Consultando RAG...")
-        response, sources = await loop.run_in_executor(None, query_rag, question, user_department)
+        response, sources = await loop.run_in_executor(None, query_rag, question)
         print(f"✅ Respuesta recibida: {response[:100]}...")
         
         return {
