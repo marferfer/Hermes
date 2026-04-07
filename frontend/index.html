@@ -118,22 +118,37 @@
 <!-- Al final de cada página -->
 <script src="assets/js/auth.js"></script>
 <script src="assets/js/utils.js"></script>
+<script src="assets/js/core/core.js"></script>
 <script>
-    // Verificar autenticación al cargar
-    document.addEventListener('DOMContentLoaded', async () => {
-        const authenticated = await initAuth();
-        if (!authenticated && !window.location.pathname.includes('index.html')) {
-            return; // initAuth ya redirigió
+document.addEventListener('DOMContentLoaded', () => {
+    // Verificar si hay una sesión activa
+    const tokens = sessionStorage.getItem('hermes_tokens');
+    if (tokens) {
+        try {
+            const parsed = JSON.parse(tokens);
+            const payload = JSON.parse(atob(parsed.access_token.split('.')[1]));
+            const now = Math.floor(Date.now() / 1000);
+            if (payload.exp > now) {
+                // Sesión aún válida, redirigir al chat
+                window.location.href = 'chat.html';
+                return;
+            }
+        } catch (e) {
+            // Token inválido, limpiar
+            sessionStorage.removeItem('hermes_tokens');
+            sessionStorage.removeItem('hermes_user');
         }
-        
-        // Cargar contenido normal
-        await loadSidebar();
-        
-        // Inicializar página específica si es necesario
-        if (typeof initializePage === 'function') {
-            initializePage();
-        }
-    });
+    }
+    
+    // Mostrar botón de login
+    const loginButton = document.getElementById('login-button');
+    if (loginButton) {
+        loginButton.addEventListener('click', () => {
+            // Redirigir a Keycloak
+            window.location.href = 'http://localhost:8080/realms/hermes/protocol/openid-connect/auth?client_id=hermes-app&redirect_uri=http%3A%2F%2Flocalhost%3A5500%2Ffrontend%2Fchat.html&response_type=code&scope=openid+profile+email';
+        });
+    }
+});
 </script>
 
 <!-- Auth Scripts -->

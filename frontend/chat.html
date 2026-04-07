@@ -327,22 +327,31 @@ function showChatInterface(user, department) {
     <!-- Al final de cada página -->
 <script src="assets/js/auth.js"></script>
 <script src="assets/js/utils.js"></script>
+<script src="assets/js/core/core.js"></script>
 <script>
     // Verificar autenticación al cargar
     document.addEventListener('DOMContentLoaded', async () => {
-        const authenticated = await initAuth();
-        if (!authenticated && !window.location.pathname.includes('index.html')) {
-            return; // initAuth ya redirigió
+    // ✅ Verificar autenticación usando la clase KeycloakAuth
+    if (!auth.isAuthenticated()) {
+        // No autenticado - redirigir a login
+        if (window.location.pathname.includes('index.html')) {
+            // Estamos en la página de login, no hacer nada
+            return;
+        } else {
+            // Redirigir a login
+            auth.login();
+            return;
         }
-        
-        // Cargar contenido normal
-        await loadSidebar();
-        
-        // Inicializar página específica si es necesario
-        if (typeof initializePage === 'function') {
-            initializePage();
-        }
-    });
+    }
+    
+    // ✅ Autenticado - cargar contenido normal
+    await loadSidebar();
+    
+    // Inicializar página específica si es necesario
+    if (typeof initializePage === 'function') {
+        initializePage();
+    }
+});
 </script>
     <script src="assets/js/chat.js"></script>
     <script>document.addEventListener('DOMContentLoaded', loadSidebar);</script>

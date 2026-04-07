@@ -509,37 +509,16 @@
         </div>
     </div>
 
-    <!-- ✅ Workaround para PDF.js 2.5.207 -->
-    <script>
-        // Forzar el contexto global que PDF.js espera
-        window.pdfjsLib = window.pdfjsLib || {};
-        window.pdfjsLib.PDFJS = window.pdfjsLib.PDFJS || {};
-    </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.min.js"></script>
-    <!-- Al final de cada página -->
+ <!-- Workaround para PDF.js -->
+<script>
+    window.pdfjsLib = window.pdfjsLib || {};
+    window.pdfjsLib.PDFJS = window.pdfjsLib.PDFJS || {};
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.5.207/pdf.min.js"></script>
+
+<!-- Sistema centralizado -->
 <script src="assets/js/auth.js"></script>
 <script src="assets/js/utils.js"></script>
-<script>
-    // Verificar autenticación al cargar
-    document.addEventListener('DOMContentLoaded', async () => {
-        const authenticated = await initAuth();
-        if (!authenticated && !window.location.pathname.includes('index.html')) {
-            return; // initAuth ya redirigió
-        }
-        
-        // Cargar contenido normal
-        await loadSidebar();
-        
-        // Inicializar página específica si es necesario
-        if (typeof initializePage === 'function') {
-            initializePage();
-        }
-    });
-</script>
-    <script src="assets/js/filters.js"></script>
-    <script src="assets/js/library.js"></script>
-    <script>document.addEventListener('DOMContentLoaded', loadSidebar);</script>
-
-</body>
+<script src="assets/js/core/core.js"></script></body>
 
 </html>

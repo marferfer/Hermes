@@ -81,16 +81,15 @@ function createStatusItem(fileName, state, message) {
 
 // Función para obtener el departamento del usuario
 function getUserDepartment() {
-    const user = JSON.parse(localStorage.getItem('hermes_user'));
+    // ✅ USAR sessionStorage
+    const user = JSON.parse(sessionStorage.getItem('hermes_user'));
     const roles = user?.realm_access?.roles || [];
     const validDepartments = ["[1014] Sistemas", "IT", "Finanzas", "RRHH", "Marketing", "Dirección"];
-    return roles.find(role => validDepartments.includes(role)) || "[1014] Sistemas";
+    return roles.find(role => validDepartments.includes(role)) || "IT";
 }
 
-// En upload.js
 function getUserDepartmentUser() {
-    const user = JSON.parse(localStorage.getItem('hermes_user'));
-    return user?.preferred_username || "unknown";
+    return getCurrentUsername(); // ✅ Usa la función global
 }
 
 // Validar archivo
@@ -159,9 +158,23 @@ async function uploadFileToServer(file, meta) {
     const formData = new FormData();
     formData.append('files', file);
     formData.append('metadata', JSON.stringify([meta]));
+    
+    // ✅ OBTENER EL TOKEN DE AUTENTICACIÓN
+    const tokens = sessionStorage.getItem('hermes_tokens');
+    let headers = {};
+    
+    if (tokens) {
+        try {
+            const parsed = JSON.parse(tokens);
+            headers = { 'Authorization': `Bearer ${parsed.access_token}` };
+        } catch (e) {
+            console.error('Error parsing tokens:', e);
+        }
+    }
 
     const response = await fetch('http://localhost:8000/api/documents/upload', {
         method: 'POST',
+        headers: headers, // ✅ INCLUIR LOS HEADERS
         body: formData
     });
 
@@ -411,6 +424,7 @@ async function uploadSelectedFiles() {
                 mime_type: file.type,
                 original_filename: file.name
             };
+
 
             await uploadFileToServer(file, meta);
 

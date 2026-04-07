@@ -22,7 +22,12 @@ def get_existing_documents() -> List[dict]:
             and not file_path.name.endswith(".meta.json")):
             
             meta_file = Path(str(file_path) + ".meta.json")
-            meta = {"access_level": "publico", "owner_department": "IT", "content_hash": ""}
+            meta = {
+                "access_level": "publico", 
+                "owner_department": "IT", 
+                "owner_user": "unknown",  # ✅ VALOR POR DEFECTO
+                "content_hash": ""
+            }
             
             if meta_file.exists():
                 try:
@@ -65,7 +70,7 @@ def is_duplicate(
     
     return False, None
 
-def _index_single_document(filename: str, content: bytes, access_level: str, owner_department: str):
+def _index_single_document(filename: str, content: bytes, access_level: str, owner_department: str, owner_user: str = "unknown"):
     """Indexa un solo documento en Qdrant."""
     try:
         from qdrant_client import QdrantClient
@@ -101,7 +106,8 @@ def _index_single_document(filename: str, content: bytes, access_level: str, own
             metadata={
                 "source_file": filename,
                 "access_level": access_level,
-                "owner_department": owner_department
+                "owner_department": owner_department,
+                "owner_user": owner_user  # ✅ ¡AGREGADO!
             }
         )
         
@@ -185,6 +191,7 @@ def save_document(
     content: bytes, 
     access_level: str, 
     owner_department: str,
+    owner_user: str,
     content_hash: str
 ) -> str:
     """Guarda un documento y sus metadatos, e indexa en Qdrant."""
@@ -194,20 +201,57 @@ def save_document(
     with open(file_path, "wb") as f:
         f.write(content)
     
-    # Guardar metadatos
+    # Guardar metadatos - ✅ USAR .meta (sin .json)
+    meta_path = file_path.with_suffix(file_path.suffix + ".meta")
     meta = {
         "access_level": access_level,
         "owner_department": owner_department,
+        "owner_user": owner_user,
         "content_hash": content_hash
     }
     
-    with open(file_path.with_suffix(file_path.suffix + ".meta.json"), "w", encoding="utf-8") as f:
+    with open(meta_path, "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False)
     
     # Indexar en Qdrant
-    _index_single_document(filename, content, access_level, owner_department)
+    _index_single_document(filename, content, access_level, owner_department, owner_user)
     
     return str(file_path)
+
+def get_existing_documents() -> List[dict]:
+    """Obtiene la lista de documentos existentes con sus metadatos."""
+    documents = []
+    if not DOCS_DIR.exists():
+        return documents
+    
+    for file_path in DOCS_DIR.iterdir():
+        if (file_path.suffix in [".pdf", ".docx", ".txt", ".pptx", ".xlsx"] 
+            and not file_path.name.endswith(".meta")):  # ✅ BUSCAR .meta (no .meta.json)
+            
+            # ✅ CONSTRUIR RUTA .meta CORRECTAMENTE
+            meta_path = file_path.with_suffix(file_path.suffix + ".meta")
+            meta = {
+                "access_level": "publico", 
+                "owner_department": "IT", 
+                "owner_user": "unknown",
+                "content_hash": ""
+            }
+            
+            if meta_path.exists():
+                try:
+                    with open(meta_path, "r", encoding="utf-8") as f:
+                        meta = json.load(f)
+                except:
+                    pass
+            
+            documents.append({
+                "name": file_path.name,
+                "path": file_path,
+                "size": file_path.stat().st_size,
+                "metadata": meta
+            })
+    
+    return documents
 
 def delete_document(filename: str) -> bool:
     """Elimina un documento y sus metadatos, y lo borra de Qdrant."""

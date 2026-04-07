@@ -191,5 +191,4 @@ document.getElementById('server-toggle')?.addEventListener('click', (e) => {
       text: "Este toggle es solo informativo. Para iniciar el servidor, ejecuta 'node server.js' en la terminal.",
       //footer: '<a href="#">Why do I have this issue?</a>'
     });
-    //alert('Este toggle es solo informativo. Para iniciar el servidor, ejecuta "node server.js" en la terminal.');
 });

@@ -34,7 +34,7 @@ function updateActiveNav() {
 
 // ✅ NUEVA FUNCIÓN: obtener departamento del usuario real
 function getUserDepartment() {
-    const user = getUserInfo();
+    const user = auth.getUserInfo();
     if (!user) return "IT";
     
     const roles = user.realm_access?.roles || [];
@@ -44,13 +44,13 @@ function getUserDepartment() {
 
 // ✅ NUEVA FUNCIÓN: obtener username real
 function getCurrentUsername() {
-    const user = getUserInfo();
+    const user = auth.getUserInfo(); // Esta función viene de auth.js
     return user?.preferred_username || "unknown";
 }
 
 // Función para cargar el perfil del usuario (sidebar)
 function loadUserProfile() {
-  const user = getUserInfo();
+  const user = auth.getUserInfo();
   if (!user) return;
   
   const department = getUserDepartment();
@@ -72,7 +72,8 @@ function loadFullProfile() {
   // Solo ejecutar si estamos en perfil.html
   if (getCurrentPage() !== 'perfil.html') return;
   
-  const user = getUserInfo();
+  // ✅ USAR auth.getUserInfo() en lugar de getUserInfo()
+  const user = auth.getUserInfo();
   if (!user) return;
   
   const roles = user.realm_access?.roles || [];
@@ -141,7 +142,11 @@ async function loadSidebar() {
   }
 }
 
-// Función de logout
+function isAuthenticated() {
+    return auth.isAuthenticated();
+}
+
+// Reemplazar la función de logout
 function logout() {
-    window.logout(); // Usa la función de auth.js
+    auth.logout();
 }

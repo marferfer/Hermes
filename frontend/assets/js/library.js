@@ -2,6 +2,16 @@
 // Función para obtener documentos del backend
 async function fetchDocuments() {
     try {
+        let headers = {};
+        
+        if (auth.isAuthenticated()) {
+            const tokens = sessionStorage.getItem('hermes_tokens');
+            if (tokens) {
+                const parsed = JSON.parse(tokens);
+                headers = { 'Authorization': `Bearer ${parsed.access_token}` };
+            }
+        }
+        
         // Obtener la lista de archivos del backend
         const response = await fetch('http://localhost:8000/api/documents/list');
         if (!response.ok) {
@@ -17,18 +27,35 @@ async function fetchDocuments() {
 
 // Obtiene el departamento del usuario actual
 function getUserDepartment() {
-    const user = JSON.parse(localStorage.getItem('hermes_user'));
-    const roles = user?.realm_access?.roles || [];
-    const validDepartments = ["[1014] Sistemas", "IT", "Finanzas", "RRHH", "Marketing", "Dirección"];
-    return roles.find(role => validDepartments.includes(role)) || "IT";
+    // ✅ USAR sessionStorage en lugar de localStorage
+    const userStr = sessionStorage.getItem('hermes_user');
+    if (!userStr) return "IT";
+    
+    try {
+        const user = JSON.parse(userStr);
+        const roles = user?.realm_access?.roles || [];
+        const validDepartments = ["[1014] Sistemas", "IT", "Finanzas", "RRHH", "Marketing", "Dirección"];
+        return roles.find(role => validDepartments.includes(role)) || "IT";
+    } catch (e) {
+        return "IT";
+    }
 }
 
 // Verifica si un documento es accesible para el usuario
 function isDocumentAccessible(doc) {
     const userDept = getUserDepartment();
+    const currentUser = getCurrentUsername();
+    const isOwner = doc.owner_user === currentUser;
+    
+    // Público: accesible para todos
     if (doc.access_level === "publico") return true;
-    if (doc.access_level === "departamento" && doc.owner_department === userDept) return true;
-    if (doc.access_level === "privado" && doc.owner_department === userDept) return true;
+    
+    // Departamento: solo mismo departamento
+    if (doc.access_level === "departamento" || doc.owner_department === userDept) return true;
+    
+    // Privado: solo el propietario
+    if (doc.access_level === "privado" && isOwner) return true;
+    
     return false;
 }
 
@@ -95,12 +122,31 @@ function createDocumentRow(doc) {
         accessText = "Privado";
     }
     
-    // Verificar si el usuario actual es el propietario
+    // Obtener información del usuario actual
     const currentUser = getCurrentUsername();
+    const userDepartment = getUserDepartment();
     const isOwner = doc.owner_user === currentUser;
     
+    // ✅ LÓGICA CORRECTA DE PERMISOS PARA DESCARGA
+    const canDownload = 
+        doc.access_level === "publico" || 
+        (doc.access_level === "departamento" && doc.owner_department === userDepartment) ||
+        (doc.access_level === "privado" && isOwner); // ← Solo el propietario
+    
+    // ✅ LÓGICA DE PERMISOS PARA ELIMINACIÓN
+    const canDelete = isOwner;
+    
+    // Botón de descarga (solo si tiene permiso)
+    const downloadButton = canDownload ? 
+        `<a href="http://localhost:8000/api/documents/${encodeURIComponent(doc.filename)}/download" 
+           class="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all mr-2" 
+           title="Descargar archivo">
+            <span class="material-symbols-outlined text-[20px]">download</span>
+        </a>` : 
+        `<span class="text-slate-300 dark:text-slate-600" title="No tienes permiso para descargar">—</span>`;
+    
     // Botón de eliminar (solo si es propietario)
-    const deleteButton = isOwner ? 
+    const deleteButton = canDelete ? 
         `<button class="p-2 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all delete-btn" data-filename="${doc.filename}" title="Eliminar archivo">
             <span class="material-symbols-outlined text-[20px]">delete</span>
         </button>` : 
@@ -134,13 +180,7 @@ function createDocumentRow(doc) {
                 ${doc.file_size ? (doc.file_size / 1024).toFixed(0) : '0'} KB
             </td>
             <td class="px-6 py-4 text-center">
-                <!-- Botón de descarga -->
-                <a href="http://localhost:8000/api/documents/${encodeURIComponent(doc.filename)}/download" 
-                   class="p-2 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all mr-2" 
-                   title="Descargar archivo">
-                    <span class="material-symbols-outlined text-[20px]">download</span>
-                </a>
-                <!-- Botón de eliminar -->
+                ${downloadButton}
                 ${deleteButton}
             </td>
         </tr>
@@ -149,8 +189,16 @@ function createDocumentRow(doc) {
 
 // Obtener username actual
 function getCurrentUsername() {
-    const user = JSON.parse(localStorage.getItem('hermes_user'));
-    return user?.preferred_username || "unknown";
+    // ✅ USAR sessionStorage en lugar de localStorage
+    const userStr = sessionStorage.getItem('hermes_user');
+    if (!userStr) return "unknown";
+    
+    try {
+        const user = JSON.parse(userStr);
+        return user?.preferred_username || "unknown";
+    } catch (e) {
+        return "unknown";
+    }
 }
 
 // Renderiza la tabla de documentos
@@ -161,11 +209,15 @@ async function renderDocuments() {
     try {
         const allDocuments = await fetchDocuments();
         
+        // ✅ FILTRAR DOCUMENTOS ANTES DE MOSTRARLOS
+        const accessibleDocuments = allDocuments.filter(doc => isDocumentAccessible(doc));
+        
         if (window.DocumentFilters && typeof window.DocumentFilters.setDocuments === 'function') {
-            window.DocumentFilters.setDocuments(allDocuments);
+            // ✅ Pasar solo documentos accesibles a los filtros
+            window.DocumentFilters.setDocuments(accessibleDocuments);
         } else {
             // Fallback sin paginación
-            renderDocumentTable(allDocuments, tableBody);
+            renderDocumentTable(accessibleDocuments, tableBody);
         }
     } catch (error) {
         console.error('Error al cargar documentos:', error);
@@ -242,7 +294,6 @@ function showDeleteConfirmation(filename) {
             }
         } catch (error) {
             console.error('Error al eliminar:', error);
-            //alert('Error al eliminar el documento');
             Swal.fire({
                 icon: "error",
                 title: "Oops...",
@@ -540,7 +591,6 @@ function closePreviewModal() {
 }
 
 
-// Exportar documentos a CSV
 function exportDocumentsToCSV() {
     let documentsToExport = [];
     
@@ -548,7 +598,7 @@ function exportDocumentsToCSV() {
     if (window.DocumentFilters && window.DocumentFilters.filteredDocuments) {
         documentsToExport = window.DocumentFilters.filteredDocuments;
     } else {
-        // Fallback: obtener todos los documentos de la tabla actual
+        // Fallback: obtener documentos accesibles de la tabla actual
         const tableRows = document.querySelectorAll('tbody tr');
         documentsToExport = Array.from(tableRows).map(row => {
             const cells = row.querySelectorAll('td');
@@ -561,8 +611,14 @@ function exportDocumentsToCSV() {
         }).filter(doc => doc.filename);
     }
     
+    // ✅ Solo exportar documentos que realmente son accesibles
     if (documentsToExport.length === 0) {
-        alert('No hay documentos para exportar');
+        Swal.fire({
+          icon: "warning",
+          title: "Oops...",
+          text: "No hay documentos accesibles para exportar",
+          //footer: '<a href="#">Why do I have this issue?</a>'
+        });
         return;
     }
     
